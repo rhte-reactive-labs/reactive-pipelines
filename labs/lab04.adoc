@@ -1,1 +1,229 @@
-this is a new file
+= Lab 04 : Externalize Configuration
+
+:source-highlighter: coderay
+
+
+
+== Service locations
+
+Our InsultGatewayService class has to known the location of the other 3 rest services (noun, adjective, adjective). 
+
+
+
+image::./images/usecase.png[]
+
+
+
+
+
+==  Noun Service: 
+This service is implemented using Spring Boot. Noun service returns a random elizabethan noun, reading the nouns from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
+
+https://github.com/rmaddali/springboot-noun-service
+
+
+== Adjective Service (Wildfly Swarm): 
+This service is implemented using Wildfly Swarm(Thorntail). Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
+
+https://github.com/rmaddali/wildflyswarm-adj
+
+== Adjective Service (Vert.x): 
+This service is another adjective service implemented using Vert.x. Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
+
+https://github.com/rmaddali/vertx-adjective-service
+
+
+== Insult Gateway Service - Using Multiple Verticles
+
+In this lab and coming labs we will be implementing Insult Service as a gateway that access all the 3 services(noun, adjective,adjective) and return a aggregrated json object.
+
+=== Insult Service Rest Endpoint 
+
+
+An important note to remember is that a verticle is a unit of deployment. It allows you to encapsulate your code for different needs. In addition, they can be run independently of each other. Verticles are communicated with each other by sending messages on the event bus. For this example, we have developed two verticles. One is the sender and the other is the receiver. 
+
+Lets create a new verticle class for exposing a new get rest endpoint at '/api/insult'. 
+
+
+
+=== src/main/java/io/vertx/starter/InsultGatewayVerticle.java 
+
+[code,java]
+....
+
+package io.vertx.starter;
+
+import io.vertx.core.Future;
+import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.reactivex.core.http.HttpServerResponse;
+import io.vertx.reactivex.ext.web.Router;
+import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.reactivex.ext.web.handler.StaticHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class InsultGatewayVerticle extends AbstractVerticle{
+	private static final Logger LOG = LoggerFactory.getLogger(InsultGatewayVerticle.class);
+	
+	@Override
+	  public void start(Future<Void> startFuture) {
+		
+		
+		Router router = Router.router(vertx);
+		vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+	    router.get("/api/insult").handler(this::insultHandler);  <1>
+	    router.get("/*").handler(StaticHandler.create()); <2>
+	    
+	    startFuture.complete();
+
+
+	}
+	
+	private void insultHandler(RoutingContext routingContext) {
+		
+		HttpServerResponse response = routingContext.response(); 
+	    response
+	      .putHeader("Content-Type", "text/html")                
+	      .end("Hi from Vert.x Insult Gateway Service");                                
+	  }
+		
+	}
+
+
+
+
+
+
+
+....
+Most of the code in the above class is covered in the previous labs expect below
+
+1. Created a get rest endpoint '/api/insult' with insultHandler
+2. StaticHandler is needed to serve a static resource from the root. 
+
+
+
+=== Modify src/main/java/io/vertx/starter/MainVerticle.java 
+
+[code,java]
+....
+
+package io.vertx.starter;
+
+import io.vertx.core.Future;
+import io.vertx.reactivex.core.AbstractVerticle;
+
+public class MainVerticle extends AbstractVerticle {
+
+	 @Override
+	  public void start(Future<Void> future) {
+	  
+	  
+		 vertx.deployVerticle(InsultGatewayVerticle.class.getName()); <1>
+		 
+		 future.complete();
+  }
+	 
+	
+}
+
+
+....
+
+
+1. deploy new verticle class that we created which is exposing the actual endpoint
+
+
+
+
+=== Package the app  
+
+
+[source,shell]
+....
+mvn clean package
+....
+
+Notice testThatTheServerIsStarted() test case in MainVerticleTest.java would be failing. 
+
+Modify src/test/java/io/vertx/starter/MainVerticleTest.java
+
+[source,java]
+....
+package io.vertx.starter;
+
+import io.vertx.core.Vertx;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(VertxUnitRunner.class)
+public class MainVerticleTest {
+
+  private Vertx vertx;
+
+  @Before
+  public void setUp(TestContext tc) {
+    vertx = Vertx.vertx();
+    vertx.deployVerticle(MainVerticle.class.getName(), tc.asyncAssertSuccess());
+    vertx.deployVerticle(InsultGatewayVerticle.class.getName(), tc.asyncAssertSuccess()); <1>
+  }
+
+  @After
+  public void tearDown(TestContext tc) {
+    vertx.close(tc.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testThatTheServerIsStarted(TestContext tc) {
+    Async async = tc.async();
+    vertx.createHttpClient().getNow(8080, "localhost", "/api/insult", response -> { <2>
+      tc.assertEquals(response.statusCode(), 200);
+      response.bodyHandler(body -> {
+        tc.assertTrue(body.length() > 0);
+        tc.assertTrue(body.toString().equalsIgnoreCase("Hi from Vert.x Insult Gateway Service"));
+        async.complete();
+      });
+    });
+  }
+
+}
+....
+1. deploy new verticle class that we created which is exposing the actual endpoint
+2. changed the url to point the newly created service
+
+
+Run the following command. Failing test case should pass now. 
+
+[source,shell]
+....
+mvn clean package
+
+[INFO] Including com.fasterxml.jackson.core:jackson-annotations:jar:2.9.5 in the shaded jar.
+[INFO] Including io.vertx:vertx-rx-java2:jar:3.5.2 in the shaded jar.
+[INFO] Including io.reactivex.rxjava2:rxjava:jar:2.1.9 in the shaded jar.
+[INFO] Including org.reactivestreams:reactive-streams:jar:1.0.2 in the shaded jar.
+[INFO] Including io.vertx:vertx-web:jar:3.5.2 in the shaded jar.
+[INFO] Including io.vertx:vertx-auth-common:jar:3.5.2 in the shaded jar.
+[INFO] Including io.vertx:vertx-bridge-common:jar:3.5.2 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:1.7.25 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-simple:jar:1.7.25 in the shaded jar.
+[INFO] Including org.apache.logging.log4j:log4j-api:jar:2.11.1 in the shaded jar.
+[INFO] Including org.apache.logging.log4j:log4j-core:jar:2.11.1 in the shaded jar.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 4.504 s
+[INFO] Finished at: 2018-10-08T01:40:54-04:00
+[INFO] ------------------------------------------------------------------------
+...
+
+
+
+.
+   
+
