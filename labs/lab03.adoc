@@ -13,18 +13,18 @@ You will be creating a insult service based on vert.x which calls others service
 image::./images/usecase.png[]
 
 
-==  Noun Service: T
+==  Noun Service: 
 This service is implemented using Spring Boot. Noun service returns a random elizabethan noun, reading the nouns from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
 
 https://github.com/rmaddali/springboot-noun-service
 
 
-== Adjective Service: 
+== Adjective Service (Wildfly Swarm): 
 This service is implemented using Wildfly Swarm(Thorntail). Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
 
 https://github.com/rmaddali/wildflyswarm-adj
 
-== Adjective Service: 
+== Adjective Service (Vert.x): 
 This service is another adjective service implemented using Vert.x. Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
 
 https://github.com/rmaddali/vertx-adjective-service
