@@ -1,4 +1,4 @@
-= Step 1 : Getting Started
+= Lab 1 : Getting Started
 :source-highlighter: coderay
 
 
