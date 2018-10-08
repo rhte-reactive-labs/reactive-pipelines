@@ -9,18 +9,27 @@
 Our InsultGatewayService  has to known the location(url) of the other 3 rest services (noun, adjective, adjective). Rather than hardcoding the urls, we will create a config file to retrive the urls.
 
 
-
 image::./images/usecase-externalize-config.png[]
 
 
 === Vertx Config
 Vert.x Config provide an extensible way to configure Vert.x applications:
 
-retrieve configuration from anywhere (file, directory, HTTP location, Git repository, Zookeeper…​)
+* retrieve configuration from anywhere (file, directory, HTTP location, Git repository, Zookeeper…​)
+* write your configuration in any format (properties, json, yaml, hocon…​)
+* lets you define the processing order and overloading
+* supports runtime reconfiguration
 
-write your configuration in any format (properties, json, yaml, hocon…​)
+Vert.x Config is structured around 2 Ojbects:
 
+==== ConfigRetriever 
 
+A ConfigRetriever is instantiated and used by the Vert.x application. It configures a set of configuration store
+
+=== ConfigurationStore 
+A ConfigurationStore defines a location from which the configuration data is read and and a syntax (json by default)
+
+NOTE: Configuration is retrieved as a JSON Object
 
 == Configuration file
 We will keep our environment specific configuration in a json file. lets create the following json file
