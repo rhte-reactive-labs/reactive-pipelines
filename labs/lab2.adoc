@@ -1,4 +1,4 @@
-= Step 02 : REST Basics with Vert.x-Web
+= Lab 02 : REST Basics with Vert.x-Web
 :source-highlighter: prettify
 
 == Key Terms in This Step
