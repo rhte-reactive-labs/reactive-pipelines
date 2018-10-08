@@ -1,1 +1,163 @@
+= Step 02 : REST Basics with Vert.x-Web
+:source-highlighter: prettify
+
+== Key Terms in This Step
+* Future<Void>
+* Router
+* RoutingContext
+
+== Vert.x Core
+
+Vert.x' core functionality contains an HTTP server.  The example app you cloned spins one up on port 8080 and returns a simple "Hello, Vert.x" (code below.)
+
+[source,java]
+....
+package io.vertx.conduit;
+
+import io.vertx.core.AbstractVerticle;
+
+public class MainVerticle extends AbstractVerticle {
+
+  @Override
+  public void start() {
+    vertx.createHttpServer()
+        .requestHandler(req -> req.response().end("Hello Vert.x!"))
+        .listen(8080);
+  }
+
+}
+....
+
+We need more than a single endpoint saying, "Hello."
+
+== Vert.x-Web
+
+https://vertx.io/docs/vertx-web/java/
+
+We will be using Vert.x-Web to build our endpoints.  
+
+Vert.x-Web is one of many Vert.x modules that extend the core toolkit.  add the following dependency in your pom.xml.  You can 
+
+[source,xml]
+....
+<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-web</artifactId>
+</dependency>
+....
+
+Vert.x-Web is as a Swiss Army Knife for building modern, scalable, web apps.  Vert.x core provides a fairly low level set of functionality for handling HTTP, and for some applications that will be sufficient.  Vert.x-Web adds functionality for building real web applications and is especially awesome for building REST APIs and REST based microservices.
+
+Vert.x-Web is influenced by Express in the NodeJS world and Sinatra in the Ruby world so if you have used either of those projects you will feel right at home. 
+
+=== Vert.x-Web Router
+
+Vert.x-Web contains a "Router" that maps URLs to Java methods.  Our initial code uses Vert.x's core HTTP server to return a single endpoint.  We will update our MainVerticle class to use the Vert.x-Web Router instead.
+
+==== Future<Void>
+
+The first thing we will do is to make sure that our Router is correctly set up and working when we start the application.  We will pass an io.vertx.core.Future Object to MainVerticle's start() method:
+
+WARNING: Your IDE will probably automatically import classes while you are typing.  Make sure that the imported classes are the one in the examples.  Your IDE may not grab the correct "Future."
+
+[source,java]
+....
+import io.vertx.core.Future
+...
+  @Override
+  public void start(Future<Void> future) {
+....
+
+In our next step we will check with our future to verify that the Router is working correctly.
+
+==== Vert.x-Web Router
+Now its time to add the Router to our start method just above the existing code:
+
+[source,java]
+....
+    import io.vertx.reactivex.ext.web; <1>
+    import io.vertx.reactivex.ext.web.Router;
+    ...
+    Router router = Router.router(vertx); <3>
+    router.route("/").handler(this::indexHandler); <4>
+....
+
+<1> Import the Router from the "io.vertx.reactivex.ext.web" package.  Be sure to use this package.  There is another Router in the "io.vertx.ext.web" package; we don't want that one. we will working with reactive extensions the whole labs.
+<2>import the router
+<3> Instantiate the Router
+<4> Handle the root endpoint, "/"
+
+The next step is to delegate handling the request to our router.  Modify the start method so that it mirrors the following:
+
+[source,java]
+....
+    
+    // Create the HTTP server and pass the "accept" method to the request handler.
+    vertx
+      .createHttpServer()
+      .requestHandler(router::accept)  <1>
+      .listen(8080, result -> {        <2>
+        if (result.succeeded()) {     
+          future.complete();           <3>
+        }else {
+          future.fail(result.cause()); <4>
+        }
+      });
+....
+
+<1> Instead of simply returning, "Hello, Vert.x!," we delegate to our newly created Router
+<2> We pass in a callback to the listen method that verifies our Roter is working correctly.  We do this by telling our Future that we succeeded or failed
+<3> future.complete() means we succeeded
+<4> future.fail(result.cause()) means we failed and should throw an error
+
+==== indexHanlder
+
+Obviously, our code won't compile at the moment because we don't have a method, "indexHandler."  So let's create that method:
+
+[source,java]
+....
+    import io.vertx.reactivex.ext.web.RoutingContext;
+    import io.vertx.reactivex.core.http.HttpServerResponse;
+    ...
+  private void indexHandler(RoutingContext routingContext) { <1>
+    HttpServerResponse response = routingContext.response(); <2>
+    response
+      .putHeader("Content-Type", "text/html")                <3>
+      .end("Hello RHTE!");                                <4>
+  }
+....
+
+
+<1> We pass in an Object "RoutingContext" to our method.   A RoutingContext represents the context for the handling of a request in Vert.x-Web.  A new instance is created for each HTTP request that is received in the Router.accept(HttpServerRequest) of the router.  The same instance is passed to any matching request or failure handlers during the routing of the request or failure.  The context provides access to the HttpServerRequest and HttpServerResponse and allows you to maintain arbitrary data that lives for the lifetime of the context such as the Session, cookies and body for the request.  Contexts are discarded once they have been routed to the handler for the request.
+<2> We create the response
+<3> Set the Content-Type of our response
+<4> Set the body of our response
+
+Let's run MainVerticleTest to make sure we didn't break anything.  You can use your IDE of course, but for the tutorial we will use Maven directly.
+
+[source,shell]
+....
+mvn clean test
+....
+
+The test should fail of course because our text doesn't match.
+
+[source,shell]
+....
+[INFO] Results:
+[INFO]
+[ERROR] Failures:
+[ERROR]   MainVerticleTest.testServerStart org.opentest4j.AssertionFailedError: expected: <Hello, Vert.x!> but was: <Hello, RHTE!>
+[INFO]
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+....
+
+Update your test (or your Verticle) so that the test passes.
+
+
+ 
 
