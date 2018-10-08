@@ -199,6 +199,24 @@ Run the following command. Failing test case should pass now.
 [source,shell]
 ....
 mvn clean package
+
+[INFO] Including com.fasterxml.jackson.core:jackson-annotations:jar:2.9.5 in the shaded jar.
+[INFO] Including io.vertx:vertx-rx-java2:jar:3.5.2 in the shaded jar.
+[INFO] Including io.reactivex.rxjava2:rxjava:jar:2.1.9 in the shaded jar.
+[INFO] Including org.reactivestreams:reactive-streams:jar:1.0.2 in the shaded jar.
+[INFO] Including io.vertx:vertx-web:jar:3.5.2 in the shaded jar.
+[INFO] Including io.vertx:vertx-auth-common:jar:3.5.2 in the shaded jar.
+[INFO] Including io.vertx:vertx-bridge-common:jar:3.5.2 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:1.7.25 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-simple:jar:1.7.25 in the shaded jar.
+[INFO] Including org.apache.logging.log4j:log4j-api:jar:2.11.1 in the shaded jar.
+[INFO] Including org.apache.logging.log4j:log4j-core:jar:2.11.1 in the shaded jar.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 4.504 s
+[INFO] Finished at: 2018-10-08T01:40:54-04:00
+[INFO] ------------------------------------------------------------------------
 ...
 
 
