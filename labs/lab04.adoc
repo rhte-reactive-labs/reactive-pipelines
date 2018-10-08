@@ -349,7 +349,7 @@ public class MainVerticleTest {
   public void setUp(TestContext tc) {
     vertx = Vertx.vertx();
     
-    JsonObject localConfig=new JsonObject();
+    JsonObject localConfig=new JsonObject(); [1]
     localConfig.put("gateway.host.springboot.noun", "thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com");
     localConfig.put("gateway.host.springboot.noun.port", 80);
     localConfig.put("gateway.host.wildfly-swarm.adj", "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com");
@@ -374,7 +374,7 @@ public class MainVerticleTest {
      
       response.bodyHandler(body -> {
     	tc.assertTrue(body.length() > 0);
-    	tc.assertTrue(body.toJsonObject().containsKey("noun"));
+    	tc.assertTrue(body.toJsonObject().containsKey("noun")); [2]
         async.complete();
       });
     });
@@ -383,7 +383,12 @@ public class MainVerticleTest {
 }
 ----
 
+1. Added JSonConfig object assembly that would be injected to the GatewayVerticle.
+2. Added new assert condition to see if noun object is coming back from service
+
+
 === Package the app  
+
 
 
 [source,shell]
