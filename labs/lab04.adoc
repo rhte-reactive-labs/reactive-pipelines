@@ -281,17 +281,17 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 
 1. The Web Client makes easy to do HTTP request/response interactions with a web server, and provides advanced features like:
 
-Json body encoding / decoding
+	Json body encoding / decoding
 
-request/response pumping
+	request/response pumping
 
-request parameters
+	request parameters
 
-unified error handling
+	unified error handling
 
-form submissions
+	form submissions
 
-the WebClient is an asynchronous Vert.x HTTP client. T
+the WebClient is an asynchronous Vert.x HTTP client. 
 
 2.  webclient  WildflySearm adj service 
 
