@@ -1,9 +1,19 @@
 = Step 03 : Our first Endpoint - Vertx Adjective Gateway Rest Service
 :source-highlighter: coderay
 
-== KeyTerms
 
-JsonObject
+
+== Use case - Elizabethan Insults ( Polyglot)
+William Shakespeare is known as one of the most influental English writers, having introduced nearly 3000 words to the language. Facts: Elizabethan Language and Vocabulary different to many of the words in the modern English language that we use today
+
+http://www.elizabethan-era.org.uk/elizabethan-language.htm
+
+You will be creating a insult service based on vert.x which calls others services noun,adjectives. Here is the high level diagram
+
+image::usecase.png[]
+
+
+
 
 == Authentication (Login) Endpoint
 The first endpoint we will implement is the Authentication endpoint, documented here:
