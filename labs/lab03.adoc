@@ -1,0 +1,453 @@
+= Step 03 : Our first Endpoint - Vertx Adjective Gateway Rest Service
+:source-highlighter: coderay
+
+== KeyTerms
+
+JsonObject
+
+== Authentication (Login) Endpoint
+The first endpoint we will implement is the Authentication endpoint, documented here:
+https://github.com/gothinkster/realworld/blob/master/api/README.md
+
+POST /api/users/login
+
+Input:
+[code,json]
+....
+{
+  "user":{
+    "email": "jake@jake.jake",
+    "password": "jakejake"
+  }
+}
+....
+
+Expected Return:
+[code,json]
+....
+{
+  "user": {
+    "email": "jake@jake.jake",
+    "token": "jwt.token.here",
+    "username": "jake",
+    "bio": "I work at statefarm",
+    "image": null
+  }
+}
+....
+== Approach
+
+Our first step will be to create a test that attempts to authenticate using the example user, "jake@jake.jake"
+We will then build the code to pass the test
+* create a REST endpoint that accepts JSON in the expected format
+* stub out the authentication and simply check hard coded values
+* return the expected JSON User representation
+
+== Test First!
+
+Create a new class, AuthenticationEndpointTest, in the io.vertx.conduit package.  Annotate the class with:
+
+[source,java]
+....
+import io.vertx.junit5.VertxExtension;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@DisplayName("Authentication Endpoint Tests")
+@ExtendWith(VertxExtension.class)
+public class AuthenticationEndpointTest {
+....
+
+=== Implement the Test Method
+
+[source,java]
+....
+    vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> {              <1>             
+      WebClient webClient = WebClient.create(vertx);                                     <2>
+      webClient.post(8080, "localhost", "/api/users/login")                              <3>
+        .sendJsonObject(new JsonObject()                                                 <4>
+          .put("user", new JsonObject()
+            .put("email", "jake@jake.jake")
+            .put("password", "jakejake")
+          ), response -> testContext.verify(() -> {                                      <5>
+          JsonObject user = response.result().bodyAsJsonObject().getJsonObject("user");  <6>
+          assertEquals(200, response.result().statusCode());                             <7>
+          assertEquals("jake@jake.jake", user.getString("email"));                       <8>
+          assertEquals("jakejake", user.getString("password"));
+          assertEquals("jwt.token.here", user.getString("token"));
+          assertEquals("jake", user.getString("username"));
+          assertEquals("I work at statefarm", user.getString("bio"));
+          assertEquals("", user.getString("image"));
+          testContext.completeNow();                                                     <9>
+        }));
+    }));
+....
+
+<1> Deploy our MainVerticle
+<2> Create a WebClient to call the endpoint
+<3> Use the WebClient to post Json to the URI
+<4> We can create a new JsonObject as an inline argument to the .sendJsonObject method
+<5> This lambda performs the actual work of the test
+<6> Unmarshall the response
+<7> Verify the status code of our response
+<8> The next lines verify the resulting Json
+<9> Finish the test by calling completeNow()
+
+== Stub out the Response
+
+[source,java]
+....
+  private void loginHandler(RoutingContext context) {
+    JsonObject user = context.getBodyAsJson().getJsonObject("user");     <1>
+    if(
+      user.getString("email").equalsIgnoreCase("jake@jake.jake") &&
+      user.getString("password").equalsIgnoreCase("jakejake")){         <2>
+
+      JsonObject returnValue = new JsonObject()     <3>
+        .put("user", new JsonObject()
+          .put("email", "jake@jake.jake")
+          .put("password", "jakejake")
+          .put("token", "jwt.token.here")
+          .put("username", "jake")
+          .put("bio", "I work at statefarm")
+          .put("image", ""));
+      System.out.println(returnValue);
+
+      HttpServerResponse response = context.response();
+      response.setStatusCode(200)     <4>
+        .putHeader("Content-Type", "application/json; charset=utf-8")     <5>
+        .putHeader("Content-Length", String.valueOf(returnValue.toString().length()))     <6>
+        .end(returnValue.toString());     <7>
+
+    }else{
+      context.response()
+        .setStatusCode(401)
+        .putHeader("Content-Type", "text/html")
+        .end("Go away");
+    }
+  }
+....
+<1> Unmarshall the Json from the request into a JsonObject
+<2> Check the values for "user" and "password"
+<3> Create the Json for our response
+<4>
+<5>
+<6>
+<7>
+
+== Lookuping the User
+
+We have the endpoint, but it isn't doing anything at the moment.  In order to actually authenticate users we will need to look them up from a database.  To do that we will need to:
+* create a database
+* prepopulate the database with data
+* connect and lookup our user, "jake@jake.jake"
+
+=== Adding a Database
+
+==== HyperSQL
+HyperSQL, http://hsqldb.org, is a small relational database that can be accessed in-memory data store and on the file system.  It isn't recommended for production systems, but it is an excellent choice for development.
+
+The database dependencies can be found in the pom.xml
+
+[source,xml]
+....
+    <!-- Database Dependencies -->
+    <dependency>
+      <groupId>io.vertx</groupId> 
+      <artifactId>vertx-jdbc-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <version>${hsqldb.version}</version>
+    </dependency>
+....
+
+The first step is to add a Vert.x JDBCClient to the MainVerticle as a class variable:
+
+[source,java]
+....
+  import io.vertx.ext.jdbc.JDBCClient;
+  ...
+public class MainVerticle extends AbstractVerticle {
+
+  private JDBCClient jdbcClient;                                   <1>
+
+  @Override
+  public void start(Future<Void> future) {
+
+    jdbcClient = JDBCClient.createShared(vertx, new JsonObject()   <2>
+      .put("url", "jdbc:hsqldb:file:db/wiki")
+      .put("driver_class", "org.hsqldb.jdbcDriver")
+      .put("max_pool_size", 30));
+
+    Router baseRouter = Router.router(vertx);
+    ...
+....
+<1> Create a member variable
+<2> Instantiate the JDBClient py passing in our vertx Object and configuration in the form of a JsonObject
+
+==== AuthProvider
+
+Add a JDBCAuth provider and instantiate it by passing in 
+
+[source,java]
+....
+import io.vertx.ext.auth.jdbc.JDBCAuth;
+
+public class MainVerticle extends AbstractVerticle {
+
+  private JDBCAuth authProvider;
+
+  private JDBCClient jdbcClient;
+
+  @Override
+  public void start(Future<Void> future) {
+
+    jdbcClient = JDBCClient.createShared(vertx, new JsonObject()
+      .put("url", "jdbc:hsqldb:file:db/wiki")
+      .put("driver_class", "org.hsqldb.jdbcDriver")
+      .put("max_pool_size", 30));
+
+    authProvider = JDBCAuth.create(vertx, jdbcClient);
+....
+
+Instantiate it 
+==== JsonObject
+
+[source,java]
+....
+    JsonObject userLogin = new JsonObject()
+      .put("user", new JsonObject()
+          .put("email", "jake@jake.jake")
+          .put("password", "jakejake")
+      );
+
+    JsonObject expectedReturn = new JsonObject()
+      .put("user", new JsonObject()
+        .put("email", "jake@jake.jake")
+        .put("password", "jakejake")
+        .put("token", "jwt.token.here")
+        .put("username", "jake")
+        .put("bio", "I work at statefarm")
+        .put("image", ""));
+....
+
+==== Test Method
+[source,java]
+....
+    vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> {
+      deploymentCheckpoint.flag();
+
+      webClient.post(8080, "localhost", "/")
+        .as(BodyCodec.string())
+        .sendJsonObject(userLogin, resp -> {
+          authenticationCheckpoint.flag();
+          assertEquals(200, resp.result().statusCode());
+          assertEquals(expectedReturn, resp.result().bodyAsJsonObject());
+        });
+    }));
+....
+
+=== Run the Test
+
+[source,shell]
+....
+mvn clean test
+...
+[ERROR] Failures:
+[ERROR]   AuthenticationEndpointTest.testSuccessfulAuthentication org.opentest4j.AssertionFailedError: expected: <{"user":{"email":"jake@jake.jake","password":"jakejake","token":"jwt.token.here","username":"jake","bio":"I work at statefarm","image":""}}> but was: <null>
+[INFO]
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+....
+
+== Add the Route and Handler
+
+[source,java]
+....
+    router.route("/api/users/login").handler(this::loginHandler);
+....
+
+== Create our Users domain model
+
+[source,java]
+....
+package io.vertx.thinkster.conduit.domain;
+
+public class User {
+
+  private String email;
+
+  private String token;
+
+  private String username;
+
+  private String bio;
+
+  private String image;
+
+  public User(String email, String token, String username, String bio, String image) {
+    this.email = email;
+    this.token = token;
+    this.username = username;
+    this.bio = bio;
+    this.image = image;
+  }
+
+  @Override
+  public String toString() {
+    return "User{" +
+      "email='" + email + '\'' +
+      ", token='" + token + '\'' +
+      ", username='" + username + '\'' +
+      ", bio='" + bio + '\'' +
+      ", image='" + image + '\'' +
+      '}';
+  }
+
+  public User(String email) {
+    this.email = email;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public String getBio() {
+    return bio;
+  }
+
+  public void setBio(String bio) {
+    this.bio = bio;
+  }
+
+  public String getImage() {
+    return image;
+  }
+
+  public void setImage(String image) {
+    this.image = image;
+  }
+}
+
+....
+
+== /api/users/login
+
+Steps
+
+* Create the Users object of our domain model
+* Add a new route
+* Attach a handler to the route
+* Implement the handler
+* Validate the required fields
+* Extract the posted data
+* Lookup the user (we will stub this out for now)
+* Return the expected result
+
+
+Add a new route: 
+
+[code,java]
+....
+    router.route("/api/users/login").handler(this::loginHandler);
+....
+
+Implement loginHandler
+
+[code,java]
+....
+    User user = new User();
+    user.setUsername("vertx-user");
+    user.setBio("Mock bio");
+    user.setEmail("user@vertx.io");
+    user.setToken("token");
+
+    HttpServerResponse response = routingContext.response();
+    response
+      .putHeader("content-type", "text/html")
+      .end(Json.encodePrettily(user));
+....
+
+./redeploy.sh
+
+== Postman and Newman
+update the variables with "localhost:8080/api"
+pass the first Postman test Auth/login
+
+== Handle the actual request values
+
+Create a domain model to handle errors:
+
+[code,java]
+....
+package io.vertx.thinkster.conduit.domain;
+
+public class ConduitError {
+
+  private Error error;
+
+  public ConduitError() {
+
+    this.error = new Error("Something went wrong");
+
+  }
+
+  public ConduitError(String body) {
+
+    this.error = new Error(body);
+  }
+
+  public Error getError() {
+    return error;
+  }
+
+  public void setError(Error error) {
+    this.error = error;
+  }
+
+  private class Error {
+
+    private String body;
+
+    public Error(String body) {
+      this.body = body;
+    }
+
+    public String getBody() {
+      return body;
+    }
+
+    public void setBody(String body) {
+      this.body = body;
+    }
+
+  }
+
+}
+....
+
