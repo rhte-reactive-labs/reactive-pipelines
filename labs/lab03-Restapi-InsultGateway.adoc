@@ -62,26 +62,25 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 	private static final Logger LOG = LoggerFactory.getLogger(InsultGatewayVerticle.class);
 	
 	@Override
-	  public void start(Future<Void> startFuture) {
+        public void start(Future<Void> startFuture) {
 		
-		Router router = Router.router(vertx);
-		vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-	  router.get("/api/insult").handler(this::insultHandler);  <1>
-	  router.get("/*").handler(StaticHandler.create()); <2>
+	    Router router = Router.router(vertx);
+	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+	    router.get("/api/insult").handler(this::insultHandler);  <1>
+	    router.get("/*").handler(StaticHandler.create()); <2>
 	    
-	  startFuture.complete();
-
-	}
+	    startFuture.complete();
+	 }
 	
 	private void insultHandler(RoutingContext routingContext) {
-		
-		HttpServerResponse response = routingContext.response(); 
-    response
-      .putHeader("Content-Type", "text/html")                
-      .end("Hi from Vert.x Insult Gateway Service");                                
-	  }
-		
+
+	  HttpServerResponse response = routingContext.response(); 
+	  response
+	    .putHeader("Content-Type", "text/html")                
+	    .end("Hi from Vert.x Insult Gateway Service");                                
 	}
+		
+}
 
 ....
 
@@ -103,8 +102,8 @@ import io.vertx.reactivex.core.AbstractVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 
-	 @Override
-	  public void start(Future<Void> future) {
+  @Override
+  public void start(Future<Void> future) {
 	  
     vertx.deployVerticle(InsultGatewayVerticle.class.getName()); <1>
 		 
