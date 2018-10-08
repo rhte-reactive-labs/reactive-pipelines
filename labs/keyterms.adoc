@@ -1,0 +1,60 @@
+== Vert.x Config
+
+* multiple configuration syntaxes (json, properties, yaml (extension), hocon (extension)…​
+* multiple configuration stores (files, directories, http, git (extension), redis (extension), system properties, environment properties)…​
+* lets you define the processing order and overloading
+* supports runtime reconfiguration
+
+The library is structured around:
+* a Config Retriever instantiated and used by the Vert.x application. It configures a set of configuration store
+* Configuration store defines a location from where the configuration data is read and and a syntax (json by default)
+* Configuration is retrieved as a JSON Object
+
+== Vert.x Web
+
+A Swiss Army Knife for building modern, scalable, web apps
+Key features of Vert.x-Web include:
+* Routing
+* Extraction of parameters from paths
+* Content negotiation
+* Request body handling
+* Cookie parsing and handling
+* Multipart forms
+* Multipart file uploads
+* Session support - both local (for sticky sessions) and clustered (for non sticky)
+* CORS (Cross Origin Resource Sharing) support
+* Basic, Redirect based, JWT based authorization
+* User/role/permission authorisation
+* Template support for server side rendering, including Handlebars, Jade, MVEL, Thymeleaf, Apache FreeMarker, Pebble
+
+== Circuit Breaker
+
+https://martinfowler.com/bliki/CircuitBreaker.html
+"You wrap a protected function call in a circuit breaker object, which monitors for failures. Once the failures reach a certain threshold, the circuit breaker trips, and all further calls to the circuit breaker return with an error, without the protected call being made at all."
+
+== RxJava
+
+https://github.com/ReactiveX/RxJava
+
+RxJava is a Java VM implementation of Reactive Extensions: a library for composing asynchronous and event-based programs by using observable sequences.
+
+It extends the observer pattern to support sequences of data/events and adds operators that allow you to compose sequences together declaratively while abstracting away concerns about things like low-level threading, synchronization, thread-safety and concurrent data structures.
+
+=== RxJava Objects
+
+RxJava is a set of 5 objects and a fluent API to manipulate them.  The objects are:
+
+* Flowable: 0..N flows, supporting Reactive-Streams and backpressure
+* Observable: 0..N flows, no backpressure,
+* Single: a flow of exactly 1 item or an error,
+* Completable: a flow without items but only a completion or error signal,
+* Maybe: a flow with no items, exactly one item or an error
+
+=== Vert.x and RxJava
+
+Vert.x integrates naturally with RxJava, allowing to use observable wherever you can use streams or asynchronous results
+
+== Lambda
+
+Lambda expressions allow you pass code as an argument.  "Closures" in other languages.
+
