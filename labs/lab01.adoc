@@ -40,7 +40,7 @@ Using the text editor of your choice open the pom.xml file.
 
 
 
-===RX Java 
+=== RX Java 
 Open the pom.xml and take a look at the dependies. you would also notice Rxjava dependencies as we will be using RxJava for all this labs. 
 
 RX Java is an implementation of the reactive programming principles for Java. With this development model, we manipulate streams (called Flowable, Observable, Maybe, Single or Completable depending on the number of items and their characteristics). RX Java provides a lots of operators to compose streams together and so write asynchronous orchestration easily. This exercise is a very basic introduction to RX Java.
