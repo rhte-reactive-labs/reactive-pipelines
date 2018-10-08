@@ -10,7 +10,7 @@ http://www.elizabethan-era.org.uk/elizabethan-language.htm
 
 You will be creating a insult service based on vert.x which calls others services noun,adjectives. Here is the high level diagram
 
-image::usecase.png[]
+image::./images/usecase.png[]
 
 
 
