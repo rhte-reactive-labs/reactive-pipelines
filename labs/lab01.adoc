@@ -38,6 +38,13 @@ Using the text editor of your choice open the pom.xml file.
 <1> The starter project contains "Step 0" of this tutorial
 <2> This class already exists.  It is where we will begin our work.  This property tells java which file in our fat jar should be run.
 
+
+
+===RX Java 
+Open the pom.xml and take a look at the dependies. you would also notice Rxjava dependencies as we will be using RxJava for all this labs. 
+
+RX Java is an implementation of the reactive programming principles for Java. With this development model, we manipulate streams (called Flowable, Observable, Maybe, Single or Completable depending on the number of items and their characteristics). RX Java provides a lots of operators to compose streams together and so write asynchronous orchestration easily. This exercise is a very basic introduction to RX Java.
+
 === IDE Time
 
 ==== Eclipse
@@ -79,11 +86,14 @@ You should successfully build and pass the default test.
 
 Open up the "target" directory, and you will see 2 jar files.  We will be running our application from the "-fat.jar"
 
+===  Verticles
+While using a main method is nice and simple, it does not necessarily scale. When your code base grows, you need a better way to structure your code. For this, Vert.x provides verticles - a simple agent-like model. Verticles are single-threaded classes interacting using asynchronous messages.
+
 === Launch our first Verticle
 
-Let's fire up our first verticle!
+This project includes a src/main/java/io/vertx/start/MainVerticle.java. Open the java file and take a look at it.
 
-NOTE: Verticles are the most basic unit of work in Vert.x
+Now, Let's fire up our first verticle!
 
 
 [source,shell]
@@ -103,7 +113,7 @@ Open http://localhost:8080.  You should see, "Hello, Vert.x!"
 
 Ctrl + c to stop the server
 
-
+=== Working on the Verticle
 
 Open src/main/java/io/vertx/start/MainVerticle.java
 
