@@ -1,4 +1,4 @@
-= Step 03 : Our first Endpoint - Vertx Adjective Gateway Rest Service
+= Lab 03 : Our first Endpoint - Vertx Adjective Gateway Rest Service
 :source-highlighter: coderay
 
 
