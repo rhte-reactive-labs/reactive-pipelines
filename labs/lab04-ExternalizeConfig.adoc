@@ -6,13 +6,13 @@
 
 == Service locations
 
-Our InsultGatewayService  has to known the location(url) of the other 3 rest services (noun, adjective, adjective). Rather than hardcoding the urls, we will create a config file to retrive the urls.
+Our InsultGatewayService has to know the locations (urls) of the other 3 rest services (noun, adjective, adjective). Rather than hardcoding the urls, we will create a config file to retrive the urls.
 
 
 image::./images/usecase-externalize-config.png[]
 
 
-=== Vertx Config
+== Vertx Config
 Vert.x Config provide an extensible way to configure Vert.x applications:
 
 * retrieve configuration from anywhere (file, directory, HTTP location, Git repository, Zookeeper…​)
@@ -22,7 +22,7 @@ Vert.x Config provide an extensible way to configure Vert.x applications:
 
 Vert.x Config is structured around 2 Ojbects:
 
-==== ConfigRetriever 
+=== ConfigRetriever 
 
 A ConfigRetriever is instantiated and used by the Vert.x application. It configures a set of configuration store
 
@@ -31,12 +31,13 @@ A ConfigurationStore defines a location from which the configuration data is rea
 
 NOTE: Configuration is retrieved as a JSON Object
 
-== Configuration file
+=== Create the Configuration file
 We will keep our environment specific configuration in a json file. lets create the following json file
 
-=== Create src/main/resources/insult-config.json
+Create a new file : src/main/resources/insult-config.json
+
 [code,json]
-----
+....
 {
 	"env": "local",
 	"insults.address": "insults-address",
@@ -54,86 +55,79 @@ We will keep our environment specific configuration in a json file. lets create 
 	"gateway.host.vertx.adj": "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com", [3]
 	"gateway.host.vertx.adj.port": 80
 }
-----
+....
+
 1. external adjective service running on ocp cluster
 2. external noun service running on ocp cluster
 3. external adjective service using spring boot on ocp cluster
  
 
-=== Edit src/main/java/io/vertx/starter/MainVerticle.java 
+=== Read the Configuration
 
+Edit src/main/java/io/vertx/starter/MainVerticle.java 
 
+First create a method to initialized to read the configuration from the file and make it available to the application:
 
 
 [code,java]
 ....
-package io.vertx.starter;
 
-import io.vertx.core.Future;
-import io.vertx.reactivex.core.AbstractVerticle;
 import io.reactivex.Maybe;
 import io.vertx.core.json.JsonObject;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.reactivex.config.ConfigRetriever;
-import io.vertx.core.DeploymentOptions;
-
-public class MainVerticle extends AbstractVerticle {
-
-	 @Override
-	  public void start(Future<Void> startFuture) {
-	  
-	  
-		 initConfigRetriever() <1>
-	      .doOnError(startFuture::fail)
-	      .subscribe(ar -> {
-	        vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar)); <2>
-	       
-//	        vertx.deployVerticle(ConfigTestVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
-	        startFuture.complete();
-	      });
-  }
+...
 	 
-	 Maybe<JsonObject> initConfigRetriever() {
+	private Maybe<JsonObject> initConfigRetriever() {     <1>
 
-		    // Load the default configuration from the classpath
-		    //LOG.info("Configuration store loading.");
-		    ConfigStoreOptions localConfig = new ConfigStoreOptions() <3>
-		      .setType("file")
-		      .setFormat("json")
-		      .setConfig(new JsonObject().put("path", "insult-config.json"));
+		// Load the default configuration from the classpath
+		ConfigStoreOptions localConfig = new ConfigStoreOptions()     <2>
+			.setType("file")
+			.setFormat("json")
+			.setConfig(new JsonObject().put("path", "insult-config.json"));
 
-		    // When running inside of Kubernetes, configure the application to also load
-		    // from a ConfigMap. This config is ONLY loaded when running inside of
-		    // Kubernetes or OpenShift
-		/*
-		    ConfigStoreOptions confOpts = new ConfigStoreOptions()
-		      .setType("configmap")
-		      .setFormat("yaml")
-		      .setConfig(new JsonObject()
-		        .put("name", "app-config")
-		        .put("optional", true)
-		      );
-		*/
+		// Add the default and container config options into the ConfigRetriever
+		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()     <3>
+			.addStore(localConfig);
 
-		    // Add the default and container config options into the ConfigRetriever
-		    ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()
-		      .addStore(localConfig);
-//		      .addStore(confOpts);
-
-		    // Create the ConfigRetriever and return the Maybe when complete
-		    return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe(); <4>
-		  }
-}
-
-
-1. Call new config retriver method to load the config file
-2. Once the config file is loaded successfully, callback handler would deploy the InsultServiceGateway
-3. Load the config file 
-4. To retrieve the configuration the verticle needs a ConfigRetriever. This object allows retrieving configuration chunks from different stores (such as git, files, http, etc.). Here we just load the contents of the insult-config.json file located in the src/main/resources directory. The configuration is a JsonObject. Vert.x uses JSON heavily, so you are going to see a lot of JSON 
-
+		// Create the ConfigRetriever and return the Maybe when complete
+		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe(); <4>
+	}
 
 ....
+
+1. Our method returns a "Maybe."  This is an RxJava object that will return nothing, a single item, or throw an error.  The one item we are expecting is a ConfigRetriever
+2. We create a ConfigStoreOptions, "localConfig" for the json file we just added.  Later when we deploy to OpenShift we can add a ConfigMap
+3. We add the file configuration to the ConfigRetrieverOptions.  Here we just load the contents of the insult-config.json file located in the src/main/resources directory. The configuration is a JsonObject. Vert.x uses JSON heavily, so you are going to see a lot of JSON
+4. Create and return the ConfigRetriever
+
+NOTE: The method "rxGetConfig()" is how RxJava is baked into basic Vert.x methods 
+
+=== Make the Configuration available to the application
+
+Our initConfigRetriever is returning an RxJava Maybe which changes the way we will call it.  RxJava's fluent API makes it easy to check for an error and then pass the configuration to our dependent Verticles.
+
+[code,java]
+....
+
+  @Override
+  public void start(Future<Void> startFuture) {
+
+    initConfigRetriever()     <1>
+      .doOnError(startFuture::fail)     <2>
+      .subscribe(ar -> {     <3>
+        vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
+        vertx.deployVerticle(DbVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
+        startFuture.complete();     <4>
+      });
+
+....
+
+1.  Call our new method
+2.  Check for an error and fail the start method if we need to
+3.  "Subscribe" or wait until the method is done and then execute the Lambda to deploy our dependent verticles with the returned configuration
+4.  Signal successful startup
 
 === Edit src/main/java/io/vertx/starter/InsultGatewayVerticle.java 
 
