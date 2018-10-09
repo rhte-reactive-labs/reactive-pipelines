@@ -10,9 +10,9 @@ endif::[]
 
 == Summary
 
-We are going to persist the insults retrieved by our application.  To do this we will add a Verticle to handle all of our database operations.
+We are going to persist the insults retrieved by our application.  To do this we will add a Verticle, DbVerticle, to handle our database operations.
 
-We will be calling this Verticle from the InsultGatewayVerticle by using Vert.x EventBus.  We will use a single messaging endpoint and send different messages for persistence and retrieval of messages.
+The InsultGatewayVerticle will call DbVerticle by sending and receiving messages over Vert.x Event Bus.  We will use a single messaging endpoint and send different instructions for persisting and retrieving insults.
 
 == KeyTerms in this Step
 
@@ -44,7 +44,7 @@ Many different handlers can be registered at the same address.  A single handler
 
 == Step 1: Fail a test
 
-Create a new test for our soon to exist functionality, "io.starter.vertx.database.DbVerticleTest."  Be sure to annotate it with the VertxUnitRunner, create a Vertx member variable, and "setUp" and "tearDown" methods:
+Create a new package for our database classes, "io.vertx.starter.database," and add a new UnitTest in the package, "DbVerticleTest."  Be sure to annotate it with the VertxUnitRunner, create a Vertx member variable, and "setUp" and "tearDown" methods:
 
 [code,java]
 ....
@@ -58,53 +58,64 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 
-@RunWith(VertxUnitRunner.class)
+@RunWith(VertxUnitRunner.class)     <1>
 public class DbVerticleTest {
 
-  private Vertx vertx;
+  private Vertx vertx;     <2>
 
   @Before
-  public void setUp(TestContext testContext) {
+  public void setUp(TestContext testContext) {     <3>
     vertx = Vertx.vertx();
-    vertx.deployVerticle(DbVerticle.class.getName(), testContext.asyncAssertSuccess());     <1>
+    vertx.deployVerticle(DbVerticle.class.getName(), testContext.asyncAssertSuccess());     <4>
   }
 
   @After
-  public void tearDown(TestContext testContext){
-    vertx.close(testContext.asyncAssertSuccess());
+  public void tearDown(TestContext testContext){     <5>
+    vertx.close(testContext.asyncAssertSuccess());     <6>
   }
+
+....
+<1> The VertxUnitRunner is needed for fine grained control of the asynchronous calls in the UnitTest.  In the default JUnit lifecycle of before/test/after the test method is executed even if there are pending Async objects in the before method. The runner gives this necessary fine grained control and delays events until the asynchronous calls have finished
+<2> Each test has a private Vertx instance
+<3> The TestContext class provides numerous useful methods for asynchronous testing.  It isn't required, but it makes testing much easier
+<4> We deploy our new (yet to be created) Verticle and check for a successful deployment asynchronously
+<5> The tearDown method is familiar to JUnit users.  It also gets a TestContext
+<6> Clean up our running Vertx instance
+
+
+[code,java]
+....
 
   @Test
   public void testPersistInsult(TestContext testContext) {
 
-    Async async = testContext.async();     <2>
+    Async async = testContext.async();     <1>
 
-    JsonObject message = new JsonObject()     <3>
+    JsonObject message = new JsonObject()     <2>
       .put("action", "persist")
       .put("insult", "Congrats, spongy strumpet!");
 
-    vertx.eventBus().send(INSULTS_ADDRESS, message, ar -> {     <4>
-      assertTrue(ar.succeeded());     <5>
-      JsonObject result = (JsonObject) ar.result().body();     <6>
-      testContext.assertEquals("success", result.getString("outcome"));     <7>
-      async.complete();     <8>
+    vertx.eventBus().send(INSULTS_ADDRESS, message, ar -> {     <3>
+      assertTrue(ar.succeeded());     <4>
+      JsonObject result = (JsonObject) ar.result().body();     <5>
+      testContext.assertEquals("success", result.getString("outcome"));     <6>
+      async.complete();     <7>
     });
 
   }
 
 ....
 
-<1> This method deploys our (currently non-existent) DbVerticle
-<2> Create an Async Object so that our test doesn't exit when the action passes to another thread (our event bus)
-<3> Create the message payload to send over the event bus.  Json is the recommended format both because it is easy to work with and because it is cross language.  The event bus is an easy way to communicate with other languages, especially front-end JavaScript
-<4> This line does 3 things:
+<1> Create an Async Object so that our test doesn't exit when the action passes to another thread (our event bus)
+<2> Create the message payload to send over the event bus.  Json is the recommended format both because it is easy to work with and because it is cross language.  The event bus is an easy way to communicate with other languages, especially front-end JavaScript
+<3> This line does 3 things:
 * calls the eventBus() method of our Vertx object on the specified address, "INSULTS_ADDRESS"
 * passes our newly created message
 * handles the response
-<5> We assume success
-<6> Get the JsonObject from the returned message
-<7> We verify the returned message
-<8> Wrap up the test by telling the TestContext that is safe to exit
+<4> We assume success
+<5> Get the JsonObject from the returned message
+<6> We verify the returned message
+<7> Wrap up the test by telling the TestContext that is safe to exit
 
 Run the test to verify that it doesn't work.  The test shouldn't even compile at this point because it references a non-existant DbVerticle.
 
