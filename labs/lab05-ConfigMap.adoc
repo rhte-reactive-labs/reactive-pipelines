@@ -1,1 +1,555 @@
+= Lab 05 : ConfigMap
+:source-highlighter: coderay
+
+Many applications require configuration using some combination of configuration files, command line arguments, and environment variables. These configuration artifacts should be decoupled from image content in order to keep containerized applications portable.
+
+=== What is ConfigMap?
+
+The ConfigMap object provides mechanisms to inject containers with configuration data while keeping containers agnostic of OpenShift Enterprise. A ConfigMap can be used to store fine-grained information like individual properties or coarse-grained information like entire configuration files or JSON blobs.
+
+The ConfigMap API object holds key-value pairs of configuration data that can be consumed in pods or used to store configuration data for system components such as controllers. ConfigMap is similar to secrets, but designed to more conveniently support working with strings that do not contain sensitive information.
+
+
+A config map is a Kubernetes entity storing the configuration of an application. 
+
+The application configuration for the gateway is in src/main/resources/insult-config.json. We are going to create a config map from this file. 
+
+
+
+
+
+===Create ConfigMap using OC  command line
+
+[code,script]
+....
+oc project vertx-insult-gateway
+
+oc create configmap insult-config --from-file=src/main/resources/insult-config.json
+configmap "insult-config" created
+....
+
+you can also read the created config map using the following command
+[code,script]
+....
+oc get configmap -o yaml
+
+- apiVersion: v1
+  data:
+    insult-config.json: "{\n\t\"env\": \"local\",\n\t\"insults.address\": \"insults-address\",\n\t\"db.url\":
+      \"jdbc:hsqldb:mem:testdb;shutdown=true\",\n\t\"db.driver\": \"org.hsqldb.jdbcDriver\",\n\t\"db.user\":
+      \"sa\",\n\t\"db.password\": \"sa\",\n\t\"query.all-insults\": \"SELECT * FROM
+      INSULTS\",\n\t\"gateway.circuit-timeout\": 1000,\n\t\"gateway.reset-timeout\":
+      1000,\n\t\"gateway.host.springboot.noun\": \"thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com\",\n\t\"gateway.host.springboot.noun.port\":
+      80,\n\t\"gateway.host.wildfly-swarm.adj\": \"spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com\",\n\t\"gateway.host.wildfly-swarm.adj.port\":
+      80,\n\t\"gateway.host.vertx.adj\": \"spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com\",\n\t\"gateway.host.vertx.adj.port\":
+      80\n}"
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: 2018-10-09T03:40:30Z
+    name: insult-config
+    namespace: vertx-adjective
+    resourceVersion: "24739611"
+    selfLink: /api/v1/namespaces/vertx-adjective/configmaps/insult-config
+    uid: 11dbec0d-cb75-11e8-a610-025ea6442b2c
+
+....
+
+
+
+
+Now that the config map is created, let’s read it from our application. There are several ways to consume a config map:
+
+1. ENV variables
+
+2. Config mounted as a file
+
+3. Vert.x Config
+
+We are going use  'Config mounted as a file'
+
+===Configmap mounted as a file
+
+Create src/main/fabric8/deployment.yml with below contents
+
+[code,yaml]
+....
+
+spec:
+  template:
+    spec:
+      # Declare a volume mounting the config map
+      volumes:
+        - configMap:
+            # Name of the config map
+            name: insult-config
+            optional: true
+            # Define the items from the config map to mount
+            items:
+            - key: insult-config.json
+              path: config.json
+            # Volume name (used as reference below)
+          name: config
+      containers:
+        - env:
+            - name: VERTX_CONFIG_PATH
+              value: '/deployments/conf/config.json'
+          volumeMounts:
+            - name: config
+              mountPath: /deployments/conf
+....
+
+Above file has inline comments to help you understand configuration. We are primarily configuring name of config map i.e insult-config with the items from the config map to mount, in this case, key is insult-config.json and the path.
+
+By default the Config Retriever that we used in InsultServiceGateway uses following stores (in this order):
+
+The Vert.x verticle config()
+
+The system properties
+
+The environment variables
+
+A conf/config.json file. This path can be overridden using the vertx-config-path system property or VERTX_CONFIG_PATH environment variable.
+
+
+In the above deployment.yml file we are passing an env variable called 'VERTX_CONFIG_PATH' to let vertx look at the path 'deployments/confg/config.json' for the configuration file that is going to mounted when the container starts in kubernetes
+
+
+When we run the below fabric8 command, plugin recognizes the deployment.yml and create the container spec so that kubernetes would mount the config map 
+
+== Build and Deploy the InsultServiceGateway to OpenShift
+
+[code,script]
+....
+
+mvn clean fabric8:deploy -Popenshift
+
+[INFO] Updating a Service from openshift.yml
+[INFO] Updated Service: target/fabric8/applyJson/vertx-adjective/service-vertx-insult-gateway.json
+[INFO] Using project: vertx-adjective
+[INFO] Updating DeploymentConfig from openshift.yml
+[INFO] Updated DeploymentConfig: target/fabric8/applyJson/vertx-adjective/deploymentconfig-vertx-insult-gateway.json
+[INFO] F8: HINT: Use the command `oc get pods -w` to watch your pods start up
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 01:01 min
+[INFO] Finished at: 2018-10-09T00:26:41-04:00
+[INFO] ------------------------------------------------------------------------
+....
+
+
+Go to the OpenShift console and look at the logs for the containers, you should see something like below to indicate that config map is been reloaded
+
+[code,script]`a += 1`
+
+....
+Starting the Java application using /opt/run-java/run-java.sh ...
+exec java -Dvertx.cacheDirBase=/tmp -Dvertx.disableDnsResolver=true -javaagent:/opt/jolokia/jolokia.jar=config=/opt/jolokia/etc/jolokia.properties -javaagent:/opt/prometheus/jmx_prometheus_javaagent.jar=9779:/opt/prometheus/prometheus-config.yml -Xmx768m -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1 -XX:CICompilerCount=2 -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError -cp . -jar /deployments/vertx-insult-gateway-1.0-SNAPSHOT-fat.jar
+I> No access restrictor found, access to any MBean is allowed
+Jolokia: Agent started with URL https://10.1.3.14:8778/jolokia/ 
+Oct 09, 2018 4:28:57 AM io.vertx.core.impl.launcher.commands.VertxIsolatedDeployer
+INFO: Succeeded in deploying verticle
+Oct 09, 2018 4:28:57 AM io.vertx.config.impl.ConfigRetrieverImpl
+```sh
+INFO: Config file path: /deployments/conf/config.json, format:json
+```
+confg vertx=spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com
+confg swarm=spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com
+confg springboot=thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com
+....
+
+
+In the previos lab, Our InsultGatewayService read the locations (urls) of the other 3 rest services (noun, adjective, adjective) from the configuration file. In this session we will use ConfigMap a feature of OpenShift/Kubernetes to mount the properties file on to the container so that our application can read the configration
+
+image::./images/usecase-externalize-config.png[]
+
+
+== Vertx Config
+Vert.x Config provide an extensible way to configure Vert.x applications:
+
+* retrieve configuration from anywhere (file, directory, HTTP location, Git repository, Zookeeper…​)
+* write your configuration in any format (properties, json, yaml, hocon…​)
+* lets you define the processing order and overloading
+* supports runtime reconfiguration
+
+Vert.x Config is structured around 2 Ojbects:
+
+=== ConfigRetriever 
+
+A ConfigRetriever is instantiated and used by the Vert.x application. It configures a set of configuration store
+
+=== ConfigurationStore 
+A ConfigurationStore defines a location from which the configuration data is read and and a syntax (json by default)
+
+NOTE: Configuration is retrieved as a JSON Object
+
+=== Create the Configuration file
+We will keep our environment specific configuration in a json file. lets create the following json file
+
+Create a new file : src/main/resources/insult-config.json
+
+[code,json]
+....
+{
+	"env": "local",
+	"insults.address": "insults-address",
+	"db.url": "jdbc:hsqldb:mem:testdb;shutdown=true",
+	"db.driver": "org.hsqldb.jdbcDriver",
+	"db.user": "sa",
+	"db.password": "sa",
+	"query.all-insults": "SELECT * FROM INSULTS",
+	"gateway.circuit-timeout": 1000,
+	"gateway.reset-timeout": 1000,
+	"gateway.host.springboot.noun": "thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com", [1]
+	"gateway.host.springboot.noun.port": 80,
+	"gateway.host.wildfly-swarm.adj": "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com",[2]
+	"gateway.host.wildfly-swarm.adj.port": 80,
+	"gateway.host.vertx.adj": "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com", [3]
+	"gateway.host.vertx.adj.port": 80
+}
+....
+
+<1> external adjective service running on ocp cluster
+<2> external noun service running on ocp cluster
+<3> external adjective service using spring boot on ocp cluster
+ 
+
+=== Read the Configuration
+
+Edit src/main/java/io/vertx/starter/MainVerticle.java 
+
+First create a method to initialized to read the configuration from the file and make it available to the application:
+
+
+[code,java]
+....
+
+import io.reactivex.Maybe;
+import io.vertx.core.json.JsonObject;
+import io.vertx.config.ConfigStoreOptions;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.reactivex.config.ConfigRetriever;
+...
+	 
+	private Maybe<JsonObject> initConfigRetriever() {     <1>
+
+		// Load the default configuration from the classpath
+		ConfigStoreOptions localConfig = new ConfigStoreOptions()     <2>
+			.setType("file")
+			.setFormat("json")
+			.setConfig(new JsonObject().put("path", "insult-config.json"));
+
+		// Add the default and container config options into the ConfigRetriever
+		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()     <3>
+			.addStore(localConfig);
+
+		// Create the ConfigRetriever and return the Maybe when complete
+		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe(); <4>
+	}
+
+....
+
+<1> Our method returns a "Maybe."  This is an RxJava object that will return nothing, a single item, or throw an error.  The one item we are expecting is a ConfigRetriever
+<2> We create a ConfigStoreOptions, "localConfig" for the json file we just added.  Later when we deploy to OpenShift we can add a ConfigMap
+<3> We add the file configuration to the ConfigRetrieverOptions.  Here we just load the contents of the insult-config.json file located in the src/main/resources directory. The configuration is a JsonObject. Vert.x uses JSON heavily, so you are going to see a lot of JSON
+<4> Create and return the ConfigRetriever
+
+NOTE: The method "rxGetConfig()" is how RxJava is baked into basic Vert.x methods 
+
+=== Make the Configuration available to the application
+
+Our initConfigRetriever is returning an RxJava Maybe which changes the way we will call it.  RxJava's fluent API makes it easy to check for an error and then pass the configuration to our dependent Verticles.
+
+[code,java]
+....
+
+  @Override
+  public void start(Future<Void> startFuture) {
+
+    initConfigRetriever()     <1>
+      .doOnError(startFuture::fail)     <2>
+      .subscribe(ar -> {     <3>
+        vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
+        vertx.deployVerticle(DbVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
+        startFuture.complete();     <4>
+      });
+
+....
+
+<1>  Call our new method
+<2>  Check for an error and fail the start method if we need to
+<3>  "Subscribe" or wait until the method is done and then execute the Lambda to deploy our dependent verticles with the returned configuration
+<4>  Signal successful startup
+
+=== Edit src/main/java/io/vertx/starter/InsultGatewayVerticle.java 
+
+[code,java]
+....
+
+
+package io.vertx.starter;
+
+import io.vertx.core.Future;
+import io.vertx.core.AsyncResult;
+import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.reactivex.core.http.HttpServerResponse;
+import io.vertx.reactivex.ext.web.Router;
+import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.reactivex.ext.web.handler.StaticHandler;
+import io.vertx.reactivex.config.ConfigRetriever;
+import io.vertx.reactivex.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.core.json.JsonObject;
+import io.vertx.reactivex.ext.web.client.HttpResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.CompositeFuture;
+import static io.vertx.starter.ApplicationProperties.*;
+
+public class InsultGatewayVerticle extends AbstractVerticle{
+	private static final Logger LOG = LoggerFactory.getLogger(InsultGatewayVerticle.class);
+	
+	private WebClient clientSpringboot;
+    private WebClient clientSwarm;
+    private WebClient clientVertx;
+    private ConfigRetriever conf;
+	
+	@Override
+	  public void start(Future<Void> startFuture) {
+		
+		conf = ConfigRetriever.create(vertx);
+		Router router = Router.router(vertx);
+		
+	    
+	    
+	    clientSpringboot = WebClient.create(vertx, new WebClientOptions()
+	    	      .setDefaultHost(config().getString(GATEWAY_HOST_SPRINGBOOT_NOUN, "springboot-noun-service.vertx-adjective.svc")) <1>
+	    	      .setDefaultPort(config().getInteger(GATEWAY_HOST_SPRINGBOOT_NOUN_PORT, 8080)));
+
+	    	    clientSwarm = WebClient.create(vertx, new WebClientOptions()
+	    	      .setDefaultHost(config().getString(GATEWAY_HOST_WILDFLYSWARM_ADJ, "wildflyswarm-adj.vertx-adjective.svc"))
+	    	      .setDefaultPort(config().getInteger(GATEWAY_HOST_WILDFLYSWARM_ADJ_PORT, 8080))); <2>
+
+	    
+	    
+	    	    clientVertx = WebClient.create(vertx, new WebClientOptions()
+	    	            .setDefaultHost("spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com")
+	    	            .setDefaultPort(80)); <3>
+	    
+	    	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+	    	    router.get("/api/insult").handler(this::insultHandler);
+	    	    router.get("/*").handler(StaticHandler.create());
+	    
+	    
+	    startFuture.complete();
+
+
+	}
+	Future<JsonObject> getNoun() {    <4>
+        Future<JsonObject> fut = Future.future();
+        clientSpringboot.get("/api/noun")
+                .timeout(3000)
+                .rxSend()  <5>
+
+                .map(HttpResponse::bodyAsJsonObject) <6>
+                .doOnError(fut::fail)
+                .subscribe(fut::complete);    
+        return fut;
+    }
+
+
+	Future<JsonObject> getAdjective() {
+        Future<JsonObject> fut = Future.future();
+        clientSwarm.get("/api/adjective")
+                .timeout(3000)
+                .rxSend()
+
+                .map(HttpResponse::bodyAsJsonObject)
+                .doOnError(fut::fail)
+                .subscribe(fut::complete);
+        return fut;
+    }
+	Future<JsonObject> getAdjective2() {
+        Future<JsonObject> fut = Future.future();
+        clientVertx.get("/api/adjective")
+                .timeout(3000)
+                .rxSend()
+
+                .map(HttpResponse::bodyAsJsonObject)
+                .doOnError(fut::fail)
+                .subscribe(fut::complete);
+        return fut;
+    }
+	private AsyncResult<JsonObject> buildInsult(CompositeFuture cf) { <7>
+        JsonObject insult = new JsonObject();
+        JsonArray adjectives = new JsonArray();
+
+        // Because there is no garanteed order of the returned futures, we need to parse the results
+
+        for (int i=0; i<=cf.size()-1; i++) {
+        	 JsonObject item = cf.resultAt(i);
+             if (item.containsKey("adjective")) {
+                 adjectives.add(item.getString("adjective"));
+             } else {
+                 insult.put("noun", item.getString("noun"));
+             }
+
+        }
+        insult.put("adjectives", adjectives);
+
+
+        return Future.succeededFuture(insult);
+    }
+	private void insultHandler(RoutingContext rc) {
+		
+		CompositeFuture.all(getNoun(), getAdjective(), getAdjective2()) <8>
+        .setHandler(ar -> {
+
+        	if (ar.succeeded()) {
+        		AsyncResult<JsonObject> result=buildInsult(ar.result());
+        		 rc.response().putHeader("content-type", "application/json").end(result.result().encodePrettily());
+        	}
+        	else
+        	{
+        		System.out.println("error");
+
+        		rc.response().putHeader("content-type", "application/json").end(new JsonObject("Error").encodePrettily());
+        	}
+
+
+
+          });                               
+	  }
+		
+	}
+
+
+
+
+
+
+
+
+....
+
+
+1. The Web Client makes easy to do HTTP request/response interactions with a web server, and provides advanced features like:
+
+	Json body encoding / decoding
+
+	request/response pumping
+
+	request parameters
+
+	unified error handling
+
+	form submissions
+
+the WebClient is an asynchronous Vert.x HTTP client. 
+
+2.  webclient  WildflySearm adj service 
+
+3.webclient  Vertx adj service 
+4. Method to call the actual noun service 
+5. send request
+6. map httpresponse to json object 
+7. Composite object containing all the response objects from 3 services. transform the object to more of representation we want to show
+8. concurrent composition of all 3 services .
+
+=== Add pom.xml 
+
+[code,xml]
+....
+
+<dependency>              
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-config</artifactId>      <1>
+</dependency>
+<dependency> 
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-client</artifactId>             <2>
+ </dependency>
+
+....
+
+
+1. Above modules are pretty self explanatory and are needed for this lab.
+
+
+=== Edit src/test/java/io/vertx/starter/MainVerticleTest.java 
+
+[source,shell]
+----
+package io.vertx.starter;
+
+import io.vertx.config.ConfigStoreOptions;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(VertxUnitRunner.class)
+public class MainVerticleTest {
+
+  private Vertx vertx;
+
+  @Before
+  public void setUp(TestContext tc) {
+    vertx = Vertx.vertx();
+    
+    JsonObject localConfig=new JsonObject(); [1]
+    localConfig.put("gateway.host.springboot.noun", "thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com");
+    localConfig.put("gateway.host.springboot.noun.port", 80);
+    localConfig.put("gateway.host.wildfly-swarm.adj", "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com");
+    localConfig.put("gateway.host.wildfly-swarm.adj.port", 80);
+    localConfig.put("gateway.host.vertx.adj", "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com");
+    localConfig.put("gateway.host.vertx.adj.port", 80);
+    
+    
+    vertx.deployVerticle(MainVerticle.class.getName(), tc.asyncAssertSuccess());
+    vertx.deployVerticle(InsultGatewayVerticle.class.getName(),new DeploymentOptions().setConfig(localConfig), tc.asyncAssertSuccess());
+  }
+
+  @After
+  public void tearDown(TestContext tc) {
+    vertx.close(tc.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testThatTheServerIsStarted(TestContext tc) {
+    Async async = tc.async();
+    vertx.createHttpClient().getNow(8080, "localhost", "/api/insult", response -> {
+     
+      response.bodyHandler(body -> {
+    	tc.assertTrue(body.length() > 0);
+    	tc.assertTrue(body.toJsonObject().containsKey("noun")); [2]
+        async.complete();
+      });
+    });
+  }
+
+}
+----
+
+1. Added JSonConfig object assembly that would be injected to the GatewayVerticle.
+2. Added new assert condition to see if noun object is coming back from service
+
+
+=== Package the app  
+
+
+
+[source,shell]
+....
+mvn clean package
+....
+
+
 
