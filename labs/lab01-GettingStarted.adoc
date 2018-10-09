@@ -2,11 +2,9 @@
 :source-highlighter: coderay
 
 
----Fork the Vert.x Insult Gateway Starter Project-----
-Got to the https://github.com/rhte-reactive-labs/vertx-insult-gateway.
+== Fork the Vert.x Insult Gateway Starter Project
+Got to the https://github.com/rhte-reactive-labs/vertx-insult-gateway
 In the top-right corner of the page, click Fork
-
-
 
 == Clone the Vert.x Insult Gateway Starter Project
 [source,shell]
@@ -17,7 +15,6 @@ cd vertx-insult-gateway (2)
 ----
 * This is a basic Vert.x project that we will use as a starting point
 * Change into the project directory
-
 
 
 === A Few Things About Your pom.xml
@@ -37,8 +34,6 @@ Using the text editor of your choice open the pom.xml file.
 
 <1> The starter project contains "Step 0" of this tutorial
 <2> This class already exists.  It is where we will begin our work.  This property tells java which file in our fat jar should be run.
-
-
 
 === RX Java 
 Open the pom.xml and take a look at the dependies. you would also notice Rxjava dependencies as we will be using RxJava for all this labs. 
