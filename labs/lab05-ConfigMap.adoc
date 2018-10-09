@@ -150,8 +150,8 @@ Jolokia: Agent started with URL https://10.1.3.14:8778/jolokia/
 Oct 09, 2018 4:28:57 AM io.vertx.core.impl.launcher.commands.VertxIsolatedDeployer
 INFO: Succeeded in deploying verticle
 Oct 09, 2018 4:28:57 AM io.vertx.config.impl.ConfigRetrieverImpl
-[source]
-INFO: Config file path: /deployments/conf/config.json, format:json
+
+*INFO: Config file path: /deployments/conf/config.json, format:json *
 
 confg vertx=spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com
 confg swarm=spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com
