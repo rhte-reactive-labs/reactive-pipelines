@@ -65,6 +65,7 @@ public class DbVerticleTest {
 
   @Before
   public void setUp(TestContext testContext) {
+    vertx = Vertx.vertx();
     vertx.deployVerticle(DbVerticle.class.getName(), testContext.asyncAssertSuccess());     <1>
   }
 
@@ -181,4 +182,17 @@ mvn clean test
 
 ....
 
-The test should fail.  If for some reason it passes raise your hand and ask one of the guys who looks like they know what they are doing for help.
+The test should fail with my favorite failure message of this entire lab:
+
+[code,bash]
+....
+
+java.lang.AssertionError: Not equals : success != failure
+
+....
+
+If for some reason it passes raise your hand and ask one of the guys who looks like they know what they are doing for help.
+
+== Step 2: Pass the test
+
+Now that we have failed a test it's time to make it pass.  We could of course simply change the "outcome" to "success," but that would be cheating.  We have a lot of work to do to make it pass.  Enough work that it is in the next lab on databases.  If you want to cheat you change the "outcome" to "success."
