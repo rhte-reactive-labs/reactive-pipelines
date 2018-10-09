@@ -1,1 +1,217 @@
+= Lab 05 : Service Discovery
+:source-highlighter: coderay
+
+
+In the previos lab, Our InsultGatewayService read the locations (urls) of the other 3 rest services (noun, adjective, adjective) from the configuration file. These services were running in aws ocp environment. In this session we will change the services URLS to services that are running inside our OCP cluster. 
+
+To do that, we are going to use  ConfigMap that we used in our last lad  to point the urls to the services running inside openshift. 
+
+
+
+=== What is Service Discovery in ?
+
+
+Lets look at how Openshift and Kubernetes handles the discovery of microservices. To brief below are the few main components in OpenShift 
+
+Pods - An addressable wrapper of one or more Docker containers
+Replication Controllers - Used to define how many pods are always running in our cluster
+Services - Allow us to define a service endpoint that is addressable throughout the cluster
+
+The important piece here is the Kubernetes Service (having this called a service is annoying as we overload the word service a lot!). 
+
+==== What is a Service?
+
+A Service is a kubernetes abstraction to provide a network connection to one or more pods. For more detail see the background on how services work.
+
+A service uses a label selector to find all the pods running which provide a certain network service on a port. You can add labels to a pod which are just a set of key/value pairs. Then a selector is just a set of key/value pairs used to match pods which have those same key/value pairs.
+
+Each service is given its own IP address and port which remains constant for the lifetime of the service. So to access the service from inside your application or container you just bind to the IP address and port number for the service.
+
+Note make sure the services are created before any of your pods which use them; otherwise the service won't have its IP address defined and you'll have to restart those pods.
+
+At a high level, a Service serves as an internal load balancer. It identifies a set of replicated pods in order to proxy the connections it receives to them. Backing pods can be added to or removed from a Service arbitrarily while the Service remains consistently available, enabling anything that depends on the Service to refer to it at a consistent internal address.
+
+==== Discovering services from your application
+
+
+The simplest way to discover things inside Kubernetes is via DNS which does not require any custom client side code, dependency injection or magic libraries. It also benefits from working with all programming languages and frameworks!
+
+Service discovery via DNS
+
+In our example,  for a service with springbooot-noun  you can just hard code the host name springbooot-nounr in your application code.
+
+
+==== Change insult-config.yml 
+
+
+
+
+
+
+
+
+
+
+The ConfigMap object provides mechanisms to inject containers with configuration data while keeping containers agnostic of OpenShift Enterprise. A ConfigMap can be used to store fine-grained information like individual properties or coarse-grained information like entire configuration files or JSON blobs.
+
+The ConfigMap API object holds key-value pairs of configuration data that can be consumed in pods or used to store configuration data for system components such as controllers. ConfigMap is similar to secrets, but designed to more conveniently support working with strings that do not contain sensitive information.
+
+
+A config map is a Kubernetes entity storing the configuration of an application. 
+
+The application configuration for the gateway is in src/main/resources/insult-config.json. We are going to create a config map from this file. 
+
+
+
+
+
+===Create ConfigMap using OC  command line
+
+[code,script]
+....
+oc project vertx-insult-gateway
+
+oc create configmap insult-config --from-file=src/main/resources/insult-config.json
+configmap "insult-config" created
+....
+
+you can also read the created config map using the following command
+[code,script]
+....
+oc get configmap -o yaml
+
+- apiVersion: v1
+  data:
+    insult-config.json: "{\n\t\"env\": \"local\",\n\t\"insults.address\": \"insults-address\",\n\t\"db.url\":
+      \"jdbc:hsqldb:mem:testdb;shutdown=true\",\n\t\"db.driver\": \"org.hsqldb.jdbcDriver\",\n\t\"db.user\":
+      \"sa\",\n\t\"db.password\": \"sa\",\n\t\"query.all-insults\": \"SELECT * FROM
+      INSULTS\",\n\t\"gateway.circuit-timeout\": 1000,\n\t\"gateway.reset-timeout\":
+      1000,\n\t\"gateway.host.springboot.noun\": \"thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com\",\n\t\"gateway.host.springboot.noun.port\":
+      80,\n\t\"gateway.host.wildfly-swarm.adj\": \"spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com\",\n\t\"gateway.host.wildfly-swarm.adj.port\":
+      80,\n\t\"gateway.host.vertx.adj\": \"spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com\",\n\t\"gateway.host.vertx.adj.port\":
+      80\n}"
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: 2018-10-09T03:40:30Z
+    name: insult-config
+    namespace: vertx-adjective
+    resourceVersion: "24739611"
+    selfLink: /api/v1/namespaces/vertx-adjective/configmaps/insult-config
+    uid: 11dbec0d-cb75-11e8-a610-025ea6442b2c
+
+....
+
+
+
+
+Now that the config map is created, let’s read it from our application. There are several ways to consume a config map:
+
+1. ENV variables
+
+2. Config mounted as a file
+
+3. Vert.x Config
+
+We are going use  'Config mounted as a file'
+
+===Configmap mounted as a file
+
+Create src/main/fabric8/deployment.yml with below contents
+
+[code,yaml]
+....
+
+spec:
+  template:
+    spec:
+      # Declare a volume mounting the config map
+      volumes:
+        - configMap:
+            # Name of the config map
+            name: insult-config
+            optional: true
+            # Define the items from the config map to mount
+            items:
+            - key: insult-config.json
+              path: config.json
+            # Volume name (used as reference below)
+          name: config
+      containers:
+        - env:
+            - name: VERTX_CONFIG_PATH
+              value: '/deployments/conf/config.json'
+          volumeMounts:
+            - name: config
+              mountPath: /deployments/conf
+....
+
+Above file has inline comments to help you understand configuration. We are primarily configuring name of config map i.e insult-config with the items from the config map to mount, in this case, key is insult-config.json and the path.
+
+By default the Config Retriever that we used in InsultServiceGateway uses following stores (in this order):
+
+The Vert.x verticle config()
+
+The system properties
+
+The environment variables
+
+A conf/config.json file. This path can be overridden using the vertx-config-path system property or VERTX_CONFIG_PATH environment variable.
+
+
+In the above deployment.yml file we are passing an env variable called 'VERTX_CONFIG_PATH' to let vertx look at the path 'deployments/confg/config.json' for the configuration file that is going to mounted when the container starts in kubernetes
+
+
+When we run the below fabric8 command, plugin recognizes the deployment.yml and create the container spec so that kubernetes would mount the config map 
+
+== Build and Deploy the InsultServiceGateway to OpenShift
+
+[code,script]
+....
+
+mvn clean fabric8:deploy -Popenshift
+
+[INFO] Updating a Service from openshift.yml
+[INFO] Updated Service: target/fabric8/applyJson/vertx-adjective/service-vertx-insult-gateway.json
+[INFO] Using project: vertx-adjective
+[INFO] Updating DeploymentConfig from openshift.yml
+[INFO] Updated DeploymentConfig: target/fabric8/applyJson/vertx-adjective/deploymentconfig-vertx-insult-gateway.json
+[INFO] F8: HINT: Use the command `oc get pods -w` to watch your pods start up
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 01:01 min
+[INFO] Finished at: 2018-10-09T00:26:41-04:00
+[INFO] ------------------------------------------------------------------------
+....
+
+
+Go to the OpenShift console and look at the logs for the containers, you should see something like below to indicate that config map is been reloaded
+
+[code,script]
+
+....
+Starting the Java application using /opt/run-java/run-java.sh ...
+exec java -Dvertx.cacheDirBase=/tmp -Dvertx.disableDnsResolver=true -javaagent:/opt/jolokia/jolokia.jar=config=/opt/jolokia/etc/jolokia.properties -javaagent:/opt/prometheus/jmx_prometheus_javaagent.jar=9779:/opt/prometheus/prometheus-config.yml -Xmx768m -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1 -XX:CICompilerCount=2 -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError -cp . -jar /deployments/vertx-insult-gateway-1.0-SNAPSHOT-fat.jar
+I> No access restrictor found, access to any MBean is allowed
+Jolokia: Agent started with URL https://10.1.3.14:8778/jolokia/ 
+Oct 09, 2018 4:28:57 AM io.vertx.core.impl.launcher.commands.VertxIsolatedDeployer
+INFO: Succeeded in deploying verticle
+Oct 09, 2018 4:28:57 AM io.vertx.config.impl.ConfigRetrieverImpl
+
+*INFO: Config file path: /deployments/conf/config.json, format:json *
+
+confg vertx=spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com
+confg swarm=spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com
+confg springboot=thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com
+....
+
+
+
+===Test the service 
+
+in the browser, hit the URL /api/insult and you should still see good response which means our API's is working in openshift
+
+
+
+
 
