@@ -1,0 +1,184 @@
+= Step ? : Using the Vert.x EventBus
+:source-highlighter: coderay
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Summary
+
+We are going to persist the insults retrieved by our application.  To do this we will add a Verticle to handle all of our database operations.
+
+We will be calling this Verticle from the InsultGatewayVerticle by using Vert.x EventBus.  We will use a single messaging endpoint and send different messages for persistence and retrieval of messages.
+
+== KeyTerms in this Step
+
+* Vert.x EventBus
+* Addresses
+* Handlers
+
+=== Vert.x Event Bus
+
+The Vert.x event bus is part of Vert.x core.  The event bus is the nervous system of Vert.x.  There is a single event bus instance for every Vert.x instance and it is obtained using the method eventBus.  The event bus allows different parts of your application to communicate with each other irrespective of what language they are written in, and whether they’re in the same Vert.x instance, or in a different Vert.x instance.  It can even be bridged to allow client side JavaScript running in a browser to communicate on the same event bus.
+
+The event bus forms a distributed peer-to-peer messaging system spanning multiple server nodes and multiple browsers.  The event bus supports publish/subscribe, point to point, and request-response messaging.
+
+The event bus API is very simple. It basically involves registering handlers, unregistering handlers and sending and publishing messages.
+
+It is a particulary good choice for separating functionality such as persistence.
+
+==== Addressing
+Messages are sent on the event bus to an address.
+
+Vert.x doesn’t bother with any fancy addressing schemes. In Vert.x an address is simply a string. Any string is valid. However it is wise to use some kind of scheme, e.g. using periods to demarcate a namespace.
+
+Some examples of valid addresses are europe.news.feed1, acme.games.pacman, sausages, and X.
+
+==== Handlers
+Messages are received in handlers. You register a handler at an address.
+
+Many different handlers can be registered at the same address.  A single handler can be registered at many different addresses.
+
+== Step 1: Fail a test
+
+Create a new test for our soon to exist functionality, "io.starter.vertx.database.DbVerticleTest."  Be sure to annotate it with the VertxUnitRunner, create a Vertx member variable, and "setUp" and "tearDown" methods:
+
+[code,java]
+....
+
+package io.vertx.starter.database;
+
+import io.vertx.core.Vertx;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+
+@RunWith(VertxUnitRunner.class)
+public class DbVerticleTest {
+
+  private Vertx vertx;
+
+  @Before
+  public void setUp(TestContext testContext) {
+    vertx.deployVerticle(DbVerticle.class.getName(), testContext.asyncAssertSuccess());     <1>
+  }
+
+  @After
+  public void tearDown(TestContext testContext){
+    vertx.close(testContext.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testPersistInsult(TestContext testContext) {
+
+    Async async = testContext.async();     <2>
+
+    JsonObject message = new JsonObject()     <3>
+      .put("action", "persist")
+      .put("insult", "Congrats, spongy strumpet!");
+
+    vertx.eventBus().send(INSULTS_ADDRESS, message, ar -> {     <4>
+      assertTrue(ar.succeeded());     <5>
+      JsonObject result = (JsonObject) ar.result().body();     <6>
+      testContext.assertEquals("success", result.getString("outcome"));     <7>
+      async.complete();     <8>
+    });
+
+  }
+
+....
+
+<1> This method deploys our (currently non-existent) DbVerticle
+<2> Create an Async Object so that our test doesn't exit when the action passes to another thread (our event bus)
+<3> Create the message payload to send over the event bus.  Json is the recommended format both because it is easy to work with and because it is cross language.  The event bus is an easy way to communicate with other languages, especially front-end JavaScript
+<4> This line does 3 things:
+* calls the eventBus() method of our Vertx object on the specified address, "INSULTS_ADDRESS"
+* passes our newly created message
+* handles the response
+<5> We assume success
+<6> Get the JsonObject from the returned message
+<7> We verify the returned message
+<8> Wrap up the test by telling the TestContext that is safe to exit
+
+Run the test to verify that it doesn't work.  The test shouldn't even compile at this point because it references a non-existant DbVerticle.
+
+Let's create our DbVerticle so that we can fail the test.
+
+[code,java]
+....
+
+package io.vertx.starter.database;
+
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
+
+public class DbVerticle extends AbstractVerticle {
+
+
+  public static final String INSULTS_ADDRESS = "insults-address";     <1>
+
+  @Override
+  public void start(Future<Void> future) {
+
+    EventBus eventBus = vertx.eventBus();     <2>
+
+    MessageConsumer<JsonObject> consumer = eventBus.consumer(INSULTS_ADDRESS);     <3>
+    consumer.handler(message -> {     <4>
+
+      String action = message.body().getString("action");     <5>
+
+      switch (action) {      <6>
+        case "persist":
+          persistInsult(message);
+          break;
+        case "retrieve":
+          retrieveInsults(message);
+          break;
+        default:
+          message.fail(1, "Unkown action: " + message.body());     <7>
+      }
+    });
+
+    future.complete();
+
+  }
+
+  private void persistInsult(Message<JsonObject> message) {
+    message.reply(new JsonObject().put("outcome", "failure"));     <8>
+  }
+
+  private void retrieveInsults(Message<JsonObject> message) {
+    message.reply(new JsonObject().put("outcome", "failure"));
+  }
+}
+
+....
+
+<1> We will use a publicly available constant for our address.  Addresses are just Strings, and Constants prevent typos.  I hate debugging typos
+<2> We get the EventBus from our vertx member variable 
+<3> We create a MessageConsumer on the address
+<4> We attach a Handler to handle the incoming messages
+<5> We get the specified "action" from our message
+<6> We are only implementing one handler that will check the action and then call the appropriate method
+<7> If the action is unspecified we will return an error.  Vert.x EventBus requires a numerical error code and a message.  We will have a better implementation of this shortly
+<8> Both of our methods simply fail at the moment (red, green, refactor)
+
+Run the test to make sure it fails (you don't want phantom successes!):
+
+[code,bash]
+....
+
+mvn clean test
+
+....
+
+The test should fail.  If for some reason it passes raise your hand and ask one of the guys who looks like they know what they are doing for help.

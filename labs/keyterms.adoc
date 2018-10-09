@@ -58,3 +58,6 @@ Vert.x integrates naturally with RxJava, allowing to use observable wherever you
 
 Lambda expressions allow you pass code as an argument.  "Closures" in other languages.
 
+== Fat Jar
+
+Fat/Uber – Contains the bit you literally write yourself PLUS the direct dependencies of your app PLUS the bits needed to run your app “on its own”
