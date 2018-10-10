@@ -48,18 +48,18 @@ Create a new file : src/main/resources/insult-config.json
 	"query.all-insults": "SELECT * FROM INSULTS",
 	"gateway.circuit-timeout": 1000,
 	"gateway.reset-timeout": 1000,
-	"gateway.host.springboot.noun": "thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com", [1]
+	"gateway.host.springboot.noun": "springboot-noun-service-devenv-user2.apps.9249.rhte.opentlc.com/api/noun",
 	"gateway.host.springboot.noun.port": 80,
-	"gateway.host.wildfly-swarm.adj": "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com",[2]
+	"gateway.host.wildfly-swarm.adj": "wildflyswarm-adj-devenv-user2.apps.9249.rhte.opentlc.com/api/adjective",
 	"gateway.host.wildfly-swarm.adj.port": 80,
-	"gateway.host.vertx.adj": "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com", [3]
+	"gateway.host.vertx.adj": "vertx-adjective-service-devenv-user2.apps.9249.rhte.opentlc.com/api/adjective", 
 	"gateway.host.vertx.adj.port": 80
 }
 ....
 
-<1> external adjective service running on ocp cluster
-<2> external noun service running on ocp cluster
-<3> external adjective service using spring boot on ocp cluster
+<1> "gateway.host.springboot.noun" - springboot noun service running on ocp cluster
+<2> "gateway.host.wildfly-swarm.adj" -  wildfly swarm adjective service running on ocp cluster
+<3> "gateway.host.vertx.adj" - vertx adjective service using spring boot on ocp cluster
  
 
 === Read the Configuration
@@ -79,20 +79,18 @@ import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.reactivex.config.ConfigRetriever;
 ...
 	 
-	private Maybe<JsonObject> initConfigRetriever() {     <1>
+	private Maybe<JsonObject> initConfigRetriever() {  //          <1>
 
 		// Load the default configuration from the classpath
-		ConfigStoreOptions localConfig = new ConfigStoreOptions()     <2>
+		ConfigStoreOptions localConfig = new ConfigStoreOptions()
 			.setType("file")
 			.setFormat("json")
-			.setConfig(new JsonObject().put("path", "insult-config.json"));
-
+			.setConfig(new JsonObject().put("path", "insult-config.json"));  //          <2>
 		// Add the default and container config options into the ConfigRetriever
-		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()     <3>
-			.addStore(localConfig);
-
+		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()
+			.addStore(localConfig);  //          <3>
 		// Create the ConfigRetriever and return the Maybe when complete
-		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe(); <4>
+		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe();  //          <4>
 	}
 
 ....
@@ -115,13 +113,14 @@ import io.vertx.core.DeploymentOptions;
   @Override
   public void start(Future<Void> startFuture) {
 
-    initConfigRetriever()     <1>
-      .doOnError(startFuture::fail)     <2>
-      .subscribe(ar -> {     <3>
+    initConfigRetriever()  //          <1>
+      .doOnError(startFuture::fail)  //          <2>
+      .subscribe(ar -> {  //          <3>
         vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
         
-        startFuture.complete();     <4>
+        startFuture.complete();  //          <4>
       });
+    }  
 
 ....
 
@@ -173,18 +172,18 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 	    
 	    
 	    clientSpringboot = WebClient.create(vertx, new WebClientOptions()
-	    	      .setDefaultHost(config().getString(GATEWAY_HOST_SPRINGBOOT_NOUN, "springboot-noun-service.vertx-adjective.svc")) <1>
+	    	      .setDefaultHost(config().getString(GATEWAY_HOST_SPRINGBOOT_NOUN, "springboot-noun-service.vertx-adjective.svc"))  //          <1>
 	    	      .setDefaultPort(config().getInteger(GATEWAY_HOST_SPRINGBOOT_NOUN_PORT, 8080)));
 
 	    	    clientSwarm = WebClient.create(vertx, new WebClientOptions()
 	    	      .setDefaultHost(config().getString(GATEWAY_HOST_WILDFLYSWARM_ADJ, "wildflyswarm-adj.vertx-adjective.svc"))
-	    	      .setDefaultPort(config().getInteger(GATEWAY_HOST_WILDFLYSWARM_ADJ_PORT, 8080))); <2>
+	    	      .setDefaultPort(config().getInteger(GATEWAY_HOST_WILDFLYSWARM_ADJ_PORT, 8080)));  //          <2>
 
 	    
 	    
 	    	    clientVertx = WebClient.create(vertx, new WebClientOptions()
 	    	            .setDefaultHost("spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com")
-	    	            .setDefaultPort(80)); <3>
+	    	            .setDefaultPort(80));  //          <3>
 	    
 	    	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
 	    	    router.get("/api/insult").handler(this::insultHandler);
@@ -195,13 +194,12 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 
 
 	}
-	Future<JsonObject> getNoun() {    <4>
+	Future<JsonObject> getNoun() {  //          <4>
         Future<JsonObject> fut = Future.future();
         clientSpringboot.get("/api/noun")
                 .timeout(3000)
-                .rxSend()  <5>
-
-                .map(HttpResponse::bodyAsJsonObject) <6>
+                .rxSend()  //          <5>
+                .map(HttpResponse::bodyAsJsonObject)  //          <6>
                 .doOnError(fut::fail)
                 .subscribe(fut::complete);    
         return fut;
@@ -230,7 +228,7 @@ public class InsultGatewayVerticle extends AbstractVerticle{
                 .subscribe(fut::complete);
         return fut;
     }
-	private AsyncResult<JsonObject> buildInsult(CompositeFuture cf) { <7>
+	private AsyncResult<JsonObject> buildInsult(CompositeFuture cf) {  //          <7>
         JsonObject insult = new JsonObject();
         JsonArray adjectives = new JsonArray();
 
@@ -252,9 +250,8 @@ public class InsultGatewayVerticle extends AbstractVerticle{
     }
 	private void insultHandler(RoutingContext rc) {
 		
-		CompositeFuture.all(getNoun(), getAdjective(), getAdjective2()) <8>
-        .setHandler(ar -> {
-
+		CompositeFuture.all(getNoun(), getAdjective(), getAdjective2())  
+        .setHandler(ar -> {  //          <8>
         	if (ar.succeeded()) {
         		AsyncResult<JsonObject> result=buildInsult(ar.result());
         		 rc.response().putHeader("content-type", "application/json").end(result.result().encodePrettily());
@@ -341,11 +338,11 @@ In the above class we are defining all the properties that we need.
 
 <dependency>              
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-config</artifactId>      <1>
+      <artifactId>vertx-config</artifactId>  //          <1>
 </dependency>
 <dependency> 
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-web-client</artifactId>             <2>
+      <artifactId>vertx-web-client</artifactId>  //          <2>
  </dependency>
 
 ....
@@ -381,7 +378,7 @@ public class MainVerticleTest {
   public void setUp(TestContext tc) {
     vertx = Vertx.vertx();
     
-    JsonObject localConfig=new JsonObject(); [1]
+    JsonObject localConfig=new JsonObject();  //          <1>
     localConfig.put("gateway.host.springboot.noun", "thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com");
     localConfig.put("gateway.host.springboot.noun.port", 80);
     localConfig.put("gateway.host.wildfly-swarm.adj", "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com");
@@ -406,7 +403,7 @@ public class MainVerticleTest {
      
       response.bodyHandler(body -> {
     	tc.assertTrue(body.length() > 0);
-    	tc.assertTrue(body.toJsonObject().containsKey("noun")); [2]
+    	tc.assertTrue(body.toJsonObject().containsKey("noun"));  //          <2>
         async.complete();
       });
     });
