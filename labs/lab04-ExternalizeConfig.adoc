@@ -110,6 +110,7 @@ Our initConfigRetriever is returning an RxJava Maybe which changes the way we wi
 
 [code,java]
 ....
+import io.vertx.core.DeploymentOptions;
 
   @Override
   public void start(Future<Void> startFuture) {
@@ -118,7 +119,7 @@ Our initConfigRetriever is returning an RxJava Maybe which changes the way we wi
       .doOnError(startFuture::fail)     <2>
       .subscribe(ar -> {     <3>
         vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
-        vertx.deployVerticle(DbVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
+        
         startFuture.complete();     <4>
       });
 
