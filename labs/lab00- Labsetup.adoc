@@ -1,10 +1,10 @@
 
-Lab instructions
+==== Lab instructions
 
 
-Step 1. Go to following url -> https://www.opentlc.com/gg/gg.cgi?profile=rhteuat
+Step 1. Go to following url -> www.opentlc.com/gg/gg.cgi?profile=rhtemgr
 Step 2: Choose a1016(Reactive pipelines using Vert.x) and the key is react
-Step 3: you would presented with id and GUID and instructions to login to developer workstation
+Step 3: you would presented with id and GUID and instructions to login to developer workstation. Please note them down as we will be using them through out the lab.
 
 Continue to Lab1 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab01-GettingStarted.adoc
 
