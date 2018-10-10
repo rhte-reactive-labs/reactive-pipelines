@@ -3,6 +3,10 @@
 :source-highlighter: coderay
 
 
+== Key Terms in This Step
+* Vertx Config
+* ConfigRetriever
+* ConfigurationStore
 
 == Service locations
 
@@ -30,6 +34,26 @@ A ConfigRetriever is instantiated and used by the Vert.x application. It configu
 A ConfigurationStore defines a location from which the configuration data is read and and a syntax (json by default)
 
 NOTE: Configuration is retrieved as a JSON Object
+
+=== Add the Dependencies to your pom.xml
+
+[code,xml]
+....
+
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-config-kubernetes-configmap</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-config-yaml</artifactId>
+		</dependency>
+
+....
 
 === Create the Configuration file
 We will keep our environment specific configuration in a json file. lets create the following json file

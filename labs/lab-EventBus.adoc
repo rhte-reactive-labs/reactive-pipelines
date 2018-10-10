@@ -119,7 +119,7 @@ public class DbVerticleTest {
 
 Run the test to verify that it doesn't work.  The test shouldn't even compile at this point because it references a non-existant DbVerticle.
 
-Let's create our DbVerticle so that we can fail the test.
+Let's create the DbVerticle so that we can fail the test.
 
 [code,java]
 ....

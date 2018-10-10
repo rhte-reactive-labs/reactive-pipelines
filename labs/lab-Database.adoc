@@ -1,4 +1,4 @@
-= Step 04 : Adding a Database
+= Step ? : Adding a Database
 :source-highlighter: coderay
 ifdef::env-github[]
 :tip-caption: :bulb:
