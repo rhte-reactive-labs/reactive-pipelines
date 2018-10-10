@@ -139,9 +139,11 @@ mvn clean package
 
 ....
 
-Note: testThatTheServerIsStarted() test case in MainVerticleTest.java shoutl fail! 
+Note: testThatTheServerIsStarted() test case in MainVerticleTest.java should still pass!
 
-Modify src/test/java/io/vertx/starter/MainVerticleTest.java
+
+
+Modify src/test/java/io/vertx/starter/MainVerticleTest.java so that it also checks for an insult:
 
 [source,java]
 ....
@@ -166,7 +168,6 @@ public class MainVerticleTest {
   public void setUp(TestContext tc) {
     vertx = Vertx.vertx();
     vertx.deployVerticle(MainVerticle.class.getName(), tc.asyncAssertSuccess());
-    vertx.deployVerticle(InsultGatewayVerticle.class.getName(), tc.asyncAssertSuccess()); <1>
   }
 
   @After
@@ -177,25 +178,35 @@ public class MainVerticleTest {
   @Test
   public void testThatTheServerIsStarted(TestContext tc) {
     Async async = tc.async();
-    vertx.createHttpClient().getNow(8080, "localhost", "/api/insult", response -> { <2>
+    vertx.createHttpClient().getNow(8080, "localhost", "/", response -> {
       tc.assertEquals(response.statusCode(), 200);
       response.bodyHandler(body -> {
         tc.assertTrue(body.length() > 0);
-        tc.assertTrue(body.toString().equalsIgnoreCase("Hi from Vert.x Insult Gateway Service"));
+        tc.assertTrue(body.toString().equalsIgnoreCase("Hello, Vert.x Insult Gateway!"));
         async.complete();
       });
     });
   }
 
+  @Test
+  public void testThatTheServerIsServingInsults(TestContext tc) {          <1>
+    Async async = tc.async();
+    vertx.createHttpClient().getNow(8080, "localhost", "/api/insult", response -> {
+      tc.assertEquals(response.statusCode(), 200);
+      response.bodyHandler(body -> {
+        tc.assertTrue(body.length() > 0);
+        tc.assertTrue(body.toString().equalsIgnoreCase("Hi, inebrious, sheep-biting foot-licker!"));
+        async.complete();
+      });
+    });
+  }
 }
 
 ....
 
+<1>  Check for our hard-coded insult
 
-1. deploy new verticle class that we created which is exposing the actual endpoint
-2. changed the url to point the newly created service
-
-Run the following command. Failing test case should pass now. 
+Run the following command. Failing test case should pass.
 
 [source,shell]
 ....
