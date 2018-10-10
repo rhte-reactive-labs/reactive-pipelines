@@ -90,44 +90,47 @@ public class MainVerticle extends AbstractVerticle {
 In our next step we will check with our future to verify that the Router is working correctly.
 
 ==== Vert.x-Web Router
-Now its time to add the Router to our start method just above the existing code:
+
+Now its time to add the Router to our start method just above the existing code and let the Router handle our url:
 
 [source,java]
 ....
     
-    import io.vertx.reactivex.ext.web.Router;
-    ...
-    Router router = Router.router(vertx); <3>
-    router.route("/").handler(this::indexHandler); <4>
+package io.vertx.starter;
+
+import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.reactivex.ext.web.Router;          <1>
+
+public class MainVerticle extends AbstractVerticle {
+
+	@Override
+	public void start(Future<Void> startFuture) {
+
+		Router router = Router.router(vertx);         <2>
+		router.route("/").handler(this::indexHandler);          <3> <4>
+
+		vertx.createHttpServer().requestHandler(router::accept).listen(8080, result -> {         <5>
+			if (result.succeeded()) {
+				startFuture.complete();          <6>
+			} else {
+				startFuture.fail(result.cause());          <7>
+			}
+		});
+	}
+
+}
+
 ....
 
-<1> Import the Router from the "io.vertx.reactivex.ext.web" package.  Be sure to use this package.  There is another Router in the "io.vertx.ext.web" package; we don't want that one. we will working with reactive extensions the whole labs.
-<2>import the router
-<3> Instantiate the Router
-<4> Handle the root endpoint, "/"
+<1>  Import the Router from the "io.vertx.reactivex.ext.web" package.  Be sure to use this package.  There is another Router in the "io.vertx.ext.web" package; we don't want that one. we will working with reactive extensions the whole labs.
+<2>  Instantiate the router
+<3>  Assign the root endpoint, "/," to the Router
+<4>  Attach a Vertx Handler the root endpoint, "/"
+<5>  We pass a callback to the listen method that verifies our Router is working correctly.  We do this by telling our Future that we succeeded or failed
+<6> future.complete() means we succeeded
+<7> future.fail(result.cause()) means we failed and should throw an error
 
-The next step is to delegate handling the request to our router.  Modify the start method so that it mirrors the following:
-
-[source,java]
-....
-    
-    // Create the HTTP server and pass the "accept" method to the request handler.
-    vertx
-      .createHttpServer()
-      .requestHandler(router::accept)  <1>
-      .listen(8080, result -> {        <2>
-        if (result.succeeded()) {     
-          future.complete();           <3>
-        }else {
-          future.fail(result.cause()); <4>
-        }
-      });
-....
-
-<1> Instead of simply returning, "Hello, Vert.x!," we delegate to our newly created Router
-<2> We pass in a callback to the listen method that verifies our Roter is working correctly.  We do this by telling our Future that we succeeded or failed
-<3> future.complete() means we succeeded
-<4> future.fail(result.cause()) means we failed and should throw an error
 
 ==== indexHanlder
 
@@ -135,22 +138,47 @@ Obviously, our code won't compile at the moment because we don't have a method, 
 
 [source,java]
 ....
-    import io.vertx.reactivex.ext.web.RoutingContext;
-    import io.vertx.reactivex.core.http.HttpServerResponse;
-    ...
-  private void indexHandler(RoutingContext routingContext) { <1>
-    HttpServerResponse response = routingContext.response(); <2>
-    response
-      .putHeader("Content-Type", "text/html")                <3>
-      .end("Hello RHTE!");                                <4>
-  }
+
+package io.vertx.starter;
+
+import io.vertx.core.Future;
+import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.reactivex.core.http.HttpServerResponse;          <1>
+import io.vertx.reactivex.ext.web.Router;
+import io.vertx.reactivex.ext.web.RoutingContext;          <2>
+
+public class MainVerticle extends AbstractVerticle {
+
+	@Override
+	public void start(Future<Void> startFuture) {
+
+		Router router = Router.router(vertx);
+		router.route("/").handler(this::indexHandler);
+
+		vertx.createHttpServer().requestHandler(router::accept).listen(8080, result -> {
+			if (result.succeeded()) {
+				startFuture.complete();
+			} else {
+				startFuture.fail(result.cause());
+			}
+		});
+	}
+
+	private void indexHandler(RoutingContext routingContext) {          <3>
+		HttpServerResponse response = routingContext.response();           <4>
+		response.putHeader("Content-Type", "text/html").end("Hello, Vert.x Insult Gateway!");           <5> <6>
+	}
+}
+
 ....
 
 
-<1> We pass in an Object "RoutingContext" to our method.   A RoutingContext represents the context for the handling of a request in Vert.x-Web.  A new instance is created for each HTTP request that is received in the Router.accept(HttpServerRequest) of the router.  The same instance is passed to any matching request or failure handlers during the routing of the request or failure.  The context provides access to the HttpServerRequest and HttpServerResponse and allows you to maintain arbitrary data that lives for the lifetime of the context such as the Session, cookies and body for the request.  Contexts are discarded once they have been routed to the handler for the request.
-<2> We create the response
-<3> Set the Content-Type of our response
-<4> Set the body of our response
+<1> Import the HttpServerResponse from the reactivex package
+<2>  Import the RoutingContext form the reactivex package
+<3>  We pass in an Object "RoutingContext" to our method.   A RoutingContext represents the context for the handling of a request in Vert.x-Web.  A new instance is created for each HTTP request that is received in the Router.accept(HttpServerRequest) of the router.  The same instance is passed to any matching request or failure handlers during the routing of the request or failure.  The context provides access to the HttpServerRequest and HttpServerResponse and allows you to maintain arbitrary data that lives for the lifetime of the context such as the Session, cookies and body for the request.  Contexts are discarded once they have been routed to the handler for the request.
+<4>  We create the response
+<5>  Set the Content-Type of our response
+<6>  Set the body of our response
 
 Let's run MainVerticleTest to make sure we didn't break anything.  You can use your IDE of course, but for the tutorial we will use Maven directly.
 
@@ -175,8 +203,58 @@ The test should fail of course because our text doesn't match.
 [INFO] ------------------------------------------------------------------------
 ....
 
-Update your test (or your Verticle) so that the test passes.
+Update your test (or your Verticle) so that the test passes.  In case you run into any difficulty the solution is below:
 
+[code,java]
+....
+
+package io.vertx.starter;
+
+import io.vertx.core.Vertx;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(VertxUnitRunner.class)
+public class MainVerticleTest {
+
+  private Vertx vertx;
+
+  @Before
+  public void setUp(TestContext tc) {
+    vertx = Vertx.vertx();
+    vertx.deployVerticle(MainVerticle.class.getName(), tc.asyncAssertSuccess());
+  }
+
+  @After
+  public void tearDown(TestContext tc) {
+    vertx.close(tc.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testThatTheServerIsStarted(TestContext tc) {
+    Async async = tc.async();
+    vertx.createHttpClient().getNow(8080, "localhost", "/", response -> {
+      tc.assertEquals(response.statusCode(), 200);
+      response.bodyHandler(body -> {
+        tc.assertTrue(body.length() > 0);
+        tc.assertTrue(body.toString().equalsIgnoreCase("Hello, Vert.x Insult Gateway!"));          <1>
+        async.complete();
+      });
+    });
+  }
+
+}
+
+....
+
+<1>  This is the text that should match
+
+If you are encountering problems raise your hand and ask one of the proctors for help!
 
  
 
