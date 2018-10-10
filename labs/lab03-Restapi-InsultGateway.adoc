@@ -16,13 +16,13 @@ This service is implemented using Spring Boot. Noun service returns a random eli
 
 It is also running as a service, in your user space inside openshift. Login to OCP to check .
 
-Please refer to OCP environment doc here to login .
+Please refer to OCP environment doc here to login . +
 
-Please refer to OCP environment doc here 
-https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/OCP-Env-Details.adoc
+Please refer to OCP environment doc here +
+https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/OCP-Env-Details.adoc +
 
 
-Here is the code for this service 
+Here is the code for this service +
 
 
 https://github.com/rmaddali/springboot-noun-service
@@ -33,11 +33,11 @@ This service is implemented using Wildfly Swarm(Thorntail). Adjective service re
 
 It is also running as a service, in your user space inside openshift. Login to OCP to check .
 
-Please refer to OCP environment doc here 
-https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/OCP-Env-Details.adoc
+Please refer to OCP environment doc here +
+https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/OCP-Env-Details.adoc +
 
 
-Here is the code for this service 
+Here is the code for this service +
 
 
 
@@ -48,13 +48,13 @@ This service is another adjective service implemented using Vert.x. Adjective se
 
 It is also running as a service, in your user space inside openshift. Login to OCP to check .
 
-Please refer to OCP environment doc here 
-https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/OCP-Env-Details.adoc
+Please refer to OCP environment doc here  +
+https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/OCP-Env-Details.adoc +
 
 
-Here is the code for this service 
+Here is the code for this service +
 
-https://github.com/rmaddali/vertx-adjective-service
+https://github.com/rmaddali/vertx-adjective-service 
 
 
 == Insult Gateway Service - Using Multiple Verticles
