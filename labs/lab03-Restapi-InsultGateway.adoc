@@ -20,6 +20,8 @@ https://github.com/rmaddali/springboot-noun-service
 == Adjective Service (Wildfly Swarm): 
 This service is implemented using Wildfly Swarm(Thorntail). Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
 
+It is also running as a service, in your user space inside openshift. Login to OCP to check 
+
 https://github.com/rmaddali/wildflyswarm-adj
 
 == Adjective Service (Vert.x): 
