@@ -102,20 +102,20 @@ You should see the following message:
 INFO: Succeeded in deploying verticle
 ....
 
-Open link:http://localhost:8080[http://localhost:8080,_blank]  You should see, "Hello, Vert.x!"
+Open link:http://localhost:8080  You should see, "Hello, Vert.x!"
 
 Ctrl + c to stop the server
 
 === Working on the Verticle
 
-Open src/main/java/io/vertx/start/MainVerticle.java
+Open src/main/java/io/vertx/starter/MainVerticle.java
 
 Change the "Hello, Vert.x" text to "Hello, Vert.x Insult Gateway"
-Check your browser again.  You should see, "Hello, Conduit"
+Check your browser again.  You should see, "Hello, Vert.x Insult Gateway"
 
 Stop your application with Ctrl + c
 
-== MainVerticleTest.java
+== Edit src/test/java/io/vertx/starter/MainVerticleTest.java
 
 The vertx-insult-gateway project comes with a single Verticle, MainVerticle, and a single unit test, MainVerticleTest.  The complete class is annotated below, but open MainVerticleTest in your IDE (or editor) because we broke the test in the previous section, and it needs to be fixed.
 
@@ -158,6 +158,7 @@ public class MainVerticleTest {
       tc.assertEquals(response.statusCode(), 200); <5>
       response.bodyHandler(body -> {
         tc.assertTrue(body.length() > 0);
+        tc.assertTrue(body.toString().equalsIgnoreCase("Hello Vert.x!"));
         async.complete();
       });
     });
