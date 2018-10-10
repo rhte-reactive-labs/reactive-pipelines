@@ -61,7 +61,9 @@ https://www.jetbrains.com/idea/
 
 We will be using mvn directly for this tutorial.  You can run the following terminal commands in IntelliJ's Terminal window if you like.
 
-==== Eclipse
+==== Eclipse/JBoss Developer Studio
+Import -> Existing Maven Project -> Browse
+
 ==== Visual Studio Code
 
 == Real Work!
