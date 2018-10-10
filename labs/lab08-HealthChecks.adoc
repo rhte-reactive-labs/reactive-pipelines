@@ -27,14 +27,20 @@ In Vert.x, HealthChecks module component provides a Vert.x Web handler on which 
 
 ---- 
 
-
-
-
-
-
+ HealthCheckHandler healthCheckHandler = HealthCheckHandler.create(vertx)
+        .register("server-online", fut -> fut.complete(online ? Status.OK() : Status.KO()));
 
 ----
 
+In the above code, we are adding a handler and registering with a name to check the application health
+
+Register following endpoints
+
+==== Edit sr/main/java/io/vertx/starter/InsultGateway.java 
+
+router.get("/api/health/readiness").handler(rc -> rc.response().end("OK"));
+    router.get("/api/health/liveness").handler(healthCheckHandler);
+==== Edit sr/main/java/io/vertx/starter/InsultGateway.java 
 
 
 
