@@ -57,17 +57,35 @@ Vert.x-Web contains a "Router" that maps URLs to Java methods.  Our initial code
 
 ==== Future<Void>
 
-The first thing we will do is to make sure that our Router is correctly set up and working when we start the application.  We will pass an io.vertx.core.Future Object to MainVerticle's start() method:
+The first thing we will do is to make sure that our Router is correctly set up and working when we start the application.  We will pass an io.vertx.core.Future Object to MainVerticle's start() method and call the complete() method once the Verticle is initialized and running.
 
 WARNING: Your IDE will probably automatically import classes while you are typing.  Make sure that the imported classes are the one in the examples.  Your IDE may not grab the correct "Future."
 
 [source,java]
 ....
-import io.vertx.core.Future
-...
+
+package io.vertx.starter;
+
+import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.core.Future;
+
+public class MainVerticle extends AbstractVerticle {
+
   @Override
-  public void start(Future<Void> future) {
+  public void start(Future<Void> startFuture) {          <1>
+    vertx.createHttpServer()
+        .requestHandler(req -> req.response().end("Hello Vert.x Insult Gateway!"))
+        .listen(8080);
+
+    startFuture.complete();          <2>
+  }
+
+}
+
 ....
+
+<1>  We pass in a Vertx Future of type Void
+<2>  We complete the Future object
 
 In our next step we will check with our future to verify that the Router is working correctly.
 
