@@ -10,11 +10,9 @@ In the top-right corner of the page, click Fork
 [source,shell]
 ----
 git clone https://github.com/{YOUR-REPO}/vertx-insult-gateway.git (1)
-cd vertx-insult-gateway (2)
-
 ----
 * This is a basic Vert.x project that we will use as a starting point
-* Change into the project directory
+
 
 
 === A Few Things About Your pom.xml
@@ -56,9 +54,9 @@ https://www.jetbrains.com/idea/
 3. "Maven" should already be selected in the "Import Project" dialog.  Click, "Next"
 4. "Root Directory" should be highlighted with the directory of your project.  Click, "Next"
 5. "redhat-jboss-ga" and "techpreview-all-repository" should already be selected.  Click, "Next"
-6. "io.vertx.starter:vertx-thinkster:1.0-SNAPSHOT
+6. "io.vertx.starter:vertx-insult-gateway:1.0-SNAPSHOT
 7.  Be sure to select JDK 1.8.  Click, "Next"
-8.  Project name should be "vertx-thinkster."  Click, "Finish"
+8.  Project name should be "vertx-insult-gateway."  Click, "Finish"
 9.  You can open the project in a new window or use your existing one
 
 We will be using mvn directly for this tutorial.  You can run the following terminal commands in IntelliJ's Terminal window if you like.
@@ -74,6 +72,7 @@ For simplicity's sake we will use maven to build and test.  You are welcome to u
 
 [source,shell]
 ....
+cd vertx-insult-gateway
 mvn clean package
 ....
 
@@ -93,7 +92,6 @@ Now, Let's fire up our first verticle!
 
 [source,shell]
 ....
-mvn clean package
 java -jar ./target/vertx-insult-gateway-1.0-SNAPSHOT-fat.jar
 ....
 
@@ -104,7 +102,7 @@ You should see the following message:
 INFO: Succeeded in deploying verticle
 ....
 
-Open http://localhost:8080.  You should see, "Hello, Vert.x!"
+Open [text link] ... http://localhost:8080 ...  You should see, "Hello, Vert.x!"
 
 Ctrl + c to stop the server
 
