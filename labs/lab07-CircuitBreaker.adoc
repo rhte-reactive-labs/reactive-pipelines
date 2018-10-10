@@ -1,5 +1,7 @@
 
-= Lab 07 : In this lab we are going to learn about CircuitBreaker and how to apply to our use case.
+= Lab 07 : CircuitBreaker
+
+In this lab we are going to learn about CircuitBreaker and how to apply to our use case.
 :source-highlighter: coderay
 
 
