@@ -71,7 +71,7 @@ In the above code, we are configuring the circuitbreaker with options like timeo
 
 
 
-=== Initilze the cicrcuit breker objects
+=== Initialize the cicrcuit breker objects
 
 
 [code,java]
