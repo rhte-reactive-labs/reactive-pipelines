@@ -2,7 +2,7 @@
 :source-highlighter: coderay
 
 == Use case - Elizabethan Insults ( Polyglot)
-William Shakespeare is known as one of the most influental English writers, having introduced nearly 3000 words to the language. Facts: Elizabethan Language and Vocabulary different to many of the words in the modern English language that we use today
+William Shakespeare is known as one of the most influental English writers, having introduced nearly 3000 words to the language. Fact: Elizabethan Language and Vocabulary differe from many of the words in the modern English language that we use today
 
 http://www.elizabethan-era.org.uk/elizabethan-language.htm
 
@@ -12,7 +12,7 @@ image::./images/usecase.png[]
 
 
 ==  Noun Service: 
-This service is implemented using Spring Boot. Noun service returns a random elizabethan noun, reading the nouns from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
+This service is implemented using Spring Boot. Noun service returns a random elizabethan noun, reading the nouns from the file. If you would like to refer the code, here is the code. This service is already running on openshift as a common service for all the lab paticipants
 
 It is also running as a service, in your user space inside openshift. Login to OCP to check .
 
@@ -29,7 +29,7 @@ https://github.com/rmaddali/springboot-noun-service
 
 
 == Adjective Service (Wildfly Swarm): 
-This service is implemented using Wildfly Swarm(Thorntail). Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
+This service is implemented using Wildfly Swarm(Thorntail). Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on openshift as a common service for all the lab paticipants
 
 It is also running as a service, in your user space inside openshift. Login to OCP to check .
 
@@ -44,7 +44,7 @@ Here is the code for this service +
 https://github.com/rmaddali/wildflyswarm-adj
 
 == Adjective Service (Vert.x): 
-This service is another adjective service implemented using Vert.x. Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on open shift as a common service for all the lab paticipants
+This service is another adjective service implemented using Vert.x. Adjective service returns a random elizabethan adjective, reading the adjective from the file. If you would like to refer the code, here is the code. This service is already running on openshift as a common service for all the lab paticipants
 
 It is also running as a service, in your user space inside openshift. Login to OCP to check .
 
@@ -59,7 +59,7 @@ https://github.com/rmaddali/vertx-adjective-service
 
 == Insult Gateway Service - Using Multiple Verticles
 
-In this lab and coming labs we will be implementing Insult Service as a gateway that access all the 3 services(noun, adjective,adjective) and return a aggregrated json object.
+In this lab and coming labs we will be implementing Insult Service as a gateway that access all the 3 services(noun, adjective,adjective) and return an aggregrated json object.
 
 === Test First!
 
@@ -111,7 +111,7 @@ public class MainVerticleTest {
   }
 
   @Test
-  public void testThatTheServerIsServingInsults(TestContext tc) {          <1>
+  public void testThatTheServerIsServingInsults(TestContext tc) {  //          <1>
     Async async = tc.async();
     vertx.createHttpClient().getNow(8080, "localhost", "/api/insult", response -> {
       tc.assertEquals(response.statusCode(), 200);
@@ -183,8 +183,8 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 		
 	    Router router = Router.router(vertx);
 	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-	    router.get("/").handler(this::indexHandler);  <1>
-	    router.get("/api/insult").handler(this::insultHandler); <2>
+	    router.get("/").handler(this::indexHandler);  //          <1>
+	    router.get("/api/insult").handler(this::insultHandler);  //          <2>
 	    
 	    startFuture.complete();
 	 }
@@ -234,7 +234,7 @@ public class MainVerticle extends AbstractVerticle {
   @Override
   public void start(Future<Void> startFuture) {
 	  
-    vertx.deployVerticle(InsultGatewayVerticle.class.getName()); <1>
+    vertx.deployVerticle(InsultGatewayVerticle.class.getName());  //          <1>
 		 
     startFuture.complete();
   }
@@ -276,3 +276,4 @@ mvn clean package
 
 ...
    
+Continue to Lab 4 ->  https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab04-ExternalizeConfig.adoc

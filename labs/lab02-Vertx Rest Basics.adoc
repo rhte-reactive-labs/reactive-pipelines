@@ -8,7 +8,7 @@
 
 == Vert.x Core
 
-Vert.x' core functionality contains an HTTP server.  The example app you cloned spins one up on port 8080 and returns a simple "Hello, Vert.x" (code below.)
+Vert.x's core functionality contains an HTTP server.  The example app you cloned spins one up on port 8080 and returns a simple "Hello, Vert.x".   Open src/main/java/io/vertx/starter/MainVerticle.java :
 
 [source,java]
 ....
@@ -72,12 +72,12 @@ import io.vertx.core.Future;
 public class MainVerticle extends AbstractVerticle {
 
   @Override
-  public void start(Future<Void> startFuture) {          <1>
+  public void start(Future<Void> startFuture) {  //          <1>
     vertx.createHttpServer()
         .requestHandler(req -> req.response().end("Hello Vert.x Insult Gateway!"))
         .listen(8080);
 
-    startFuture.complete();          <2>
+    startFuture.complete();  //          <2>
   }
 
 }
@@ -100,21 +100,21 @@ package io.vertx.starter;
 
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.reactivex.ext.web.Router;          <1>
+import io.vertx.reactivex.ext.web.Router;  //          <1>
 
 public class MainVerticle extends AbstractVerticle {
 
 	@Override
 	public void start(Future<Void> startFuture) {
 
-		Router router = Router.router(vertx);         <2>
-		router.route("/").handler(this::indexHandler);          <3> <4>
+		Router router = Router.router(vertx);  //          <2>
+		router.route("/").handler(this::indexHandler);  //          <3> <4>
 
-		vertx.createHttpServer().requestHandler(router::accept).listen(8080, result -> {         <5>
+		vertx.createHttpServer().requestHandler(router::accept).listen(8080, result -> {  //          <5>
 			if (result.succeeded()) {
-				startFuture.complete();          <6>
+				startFuture.complete();  //          <6>
 			} else {
-				startFuture.fail(result.cause());          <7>
+				startFuture.fail(result.cause());  //          <7>
 			}
 		});
 	}
@@ -132,7 +132,7 @@ public class MainVerticle extends AbstractVerticle {
 <7> future.fail(result.cause()) means we failed and should throw an error
 
 
-==== indexHanlder
+==== indexHandlder
 
 Obviously, our code won't compile at the moment because we don't have a method, "indexHandler."  So let's create that method:
 
@@ -143,9 +143,9 @@ package io.vertx.starter;
 
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.http.HttpServerResponse;          <1>
+import io.vertx.reactivex.core.http.HttpServerResponse;  //          <1>
 import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;          <2>
+import io.vertx.reactivex.ext.web.RoutingContext;  //          <2>
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -164,9 +164,9 @@ public class MainVerticle extends AbstractVerticle {
 		});
 	}
 
-	private void indexHandler(RoutingContext routingContext) {          <3>
-		HttpServerResponse response = routingContext.response();           <4>
-		response.putHeader("Content-Type", "text/html").end("Hello, Vert.x Insult Gateway!");           <5> <6>
+	private void indexHandler(RoutingContext routingContext) {  //          <3>
+		HttpServerResponse response = routingContext.response();  //          <4>
+		response.putHeader("Content-Type", "text/html").end("Hello, Vert.x Insult Gateway!");  //          <5> <6>
 	}
 }
 
@@ -238,7 +238,7 @@ public class MainVerticleTest {
       tc.assertEquals(response.statusCode(), 200);
       response.bodyHandler(body -> {
         tc.assertTrue(body.length() > 0);
-        tc.assertTrue(body.toString().equalsIgnoreCase("Hello, Vert.x Insult Gateway!"));          <1>
+        tc.assertTrue(body.toString().equalsIgnoreCase("Hello, Vert.x Insult Gateway!"));  //          <1>
         async.complete();
       });
     });
@@ -252,5 +252,6 @@ public class MainVerticleTest {
 
 If you are encountering problems raise your hand and ask one of the proctors for help!
 
- 
+
+Continue to Lab 3 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab03-Restapi-InsultGateway.adoc
 
