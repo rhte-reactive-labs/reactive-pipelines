@@ -426,3 +426,4 @@ mvn clean package
 ....
 
 
+Continue to Lab 5 ->  https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab05-ConfigMap.adoc
