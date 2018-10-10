@@ -35,7 +35,7 @@ In this lab and coming labs we will be implementing Insult Service as a gateway 
 === Insult Service Rest Endpoint 
 
 
-An important note to remember is that a verticle is a unit of deployment. It allows you to encapsulate your code for different needs. In addition, they can be run independently of each other. Verticles are communicated with each other by sending messages on the event bus. For this example, we have developed two verticles. One is the sender and the other is the receiver. 
+An important note to remember is that a Verticle is a unit of deployment. It allows you to encapsulate your code for different needs. In addition, Verticles can be run independently of each other. Verticles communicate with each other by sending messages on an event bus that is a core part of Vert.x. For this example, we have developed two Verticles. One is the sender and the other is the receiver. 
 
 Lets create a new verticle class for exposing a new get rest endpoint at '/api/insult'. 
 
