@@ -19,7 +19,7 @@ A config map is a Kubernetes entity storing the configuration of an application.
 The application configuration for the gateway is in src/main/resources/insult-config.json. We are going to create a config map from this file. 
 
 
-
+Pre-req - Please login to OCP with the provided userid/pass to run oc commands
 
 
 ===Create ConfigMap using OC  command line
