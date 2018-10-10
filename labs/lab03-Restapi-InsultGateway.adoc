@@ -66,18 +66,28 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 		
 	    Router router = Router.router(vertx);
 	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-	    router.get("/api/insult").handler(this::insultHandler);  <1>
-	    router.get("/*").handler(StaticHandler.create()); <2>
+	    router.get("/").handler(this::indexHandler);  <1>
+	    router.get("/api/insult").handler(this::insultHandler); <2>
 	    
 	    startFuture.complete();
 	 }
 	
+	private void indexHandler(RoutingContext routingContext) {
+
+	  HttpServerResponse response = routingContext.response(); 
+	  response
+	    .putHeader("Content-Type", "text/html")                
+	    .end("Hello, Vert.x Insult Gateway!");                                
+
+	}
+
 	private void insultHandler(RoutingContext routingContext) {
 
 	  HttpServerResponse response = routingContext.response(); 
 	  response
 	    .putHeader("Content-Type", "text/html")                
-	    .end("Hi from Vert.x Insult Gateway Service");                                
+	    .end("Hi, inebrious, sheep-biting foot-licker!");                                
+
 	}
 		
 }
@@ -86,11 +96,13 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 
 Most of the code in the above class is covered in the previous labs except:
 
-1. Created a get rest endpoint '/api/insult' with insultHandler
-2. StaticHandler is needed to serve a static resource from the root. 
+1. This is our previous handler returning, "Hello, Vert.x Insult Gateway!"
+2. This is a new handler to serve insults
 
 
 === Modify src/main/java/io/vertx/starter/MainVerticle.java 
+
+Remove most of the functionality from MainVerticle.  Its' only task now is to instantiate the InsultGatewayVerticle.
 
 [code,java]
 ....
@@ -103,11 +115,11 @@ import io.vertx.reactivex.core.AbstractVerticle;
 public class MainVerticle extends AbstractVerticle {
 
   @Override
-  public void start(Future<Void> future) {
+  public void start(Future<Void> startFuture) {
 	  
     vertx.deployVerticle(InsultGatewayVerticle.class.getName()); <1>
 		 
-    future.complete();
+    startFuture.complete();
   }
 	
 }
