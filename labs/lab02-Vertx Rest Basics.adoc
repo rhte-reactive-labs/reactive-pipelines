@@ -191,16 +191,12 @@ The test should fail of course because our text doesn't match.
 
 [source,shell]
 ....
-[INFO] Results:
-[INFO]
-[ERROR] Failures:
-[ERROR]   MainVerticleTest.testServerStart org.opentest4j.AssertionFailedError: expected: <Hello, Vert.x!> but was: <Hello, RHTE!>
-[INFO]
-[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
-[INFO]
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
+Running io.vertx.starter.MainVerticleTest
+Oct 10, 2018 5:54:38 PM io.vertx.core.http.impl.HttpClientResponseImpl
+SEVERE: java.lang.AssertionError: Expected true
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.788 sec <<< FAILURE!
+testThatTheServerIsStarted(io.vertx.starter.MainVerticleTest)  Time elapsed: 0.739 sec  <<< FAILURE!
+java.lang.AssertionError: Expected true
 ....
 
 Update your test (or your Verticle) so that the test passes.  In case you run into any difficulty the solution is below:
