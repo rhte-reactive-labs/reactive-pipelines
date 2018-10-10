@@ -104,7 +104,9 @@ You should see the following message:
 INFO: Succeeded in deploying verticle
 ....
 
-Open link:http://localhost:8080  You should see, "Hello, Vert.x!"
+Open http://localhost:8080  
+
+You should see, "Hello, Vert.x!"
 
 Ctrl + c to stop the server
 
@@ -176,3 +178,6 @@ public class MainVerticleTest {
 <3>  We pass a Vertx object and a VertxTestContext object to each test method.  These are supplied by the VertxExtension
 <4>  We instantiate the WebCliet to test our endpoint
 <5>  Async handler to for a callback when the response is ready and asserting on the response
+<6>  Change this code to "Hello, Vert.x Insult Gateway!"
+
+Rinse and repeat.  Your test should pass.  If it doesn't raise your hand and ask one of the guys proctoring the exam for help.
