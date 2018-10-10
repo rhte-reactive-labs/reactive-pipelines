@@ -176,7 +176,7 @@ public class MainVerticleTest {
 
 
 <3>  We pass a Vertx object and a VertxTestContext object to each test method.  These are supplied by the VertxExtension
-<4>  We instantiate the WebCliet to test our endpoint
+<4>  We instantiate the WebClient to test our endpoint
 <5>  Async handler to for a callback when the response is ready and asserting on the response
 <6>  Change this code to "Hello, Vert.x Insult Gateway!"
 
