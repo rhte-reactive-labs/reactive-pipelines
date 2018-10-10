@@ -8,7 +8,7 @@
 
 == Vert.x Core
 
-Vert.x's core functionality contains an HTTP server.  The example app you cloned spins one up on port 8080 and returns a simple "Hello, Vert.x".  Open src/main/java/io/vertx/starter/MainVerticle.java :
+Vert.x's core functionality contains an HTTP server.  The example app you cloned spins one up on port 8080 and returns a simple "Hello, Vert.x".   Open src/main/java/io/vertx/starter/MainVerticle.java :
 
 [source,java]
 ....
@@ -132,7 +132,7 @@ public class MainVerticle extends AbstractVerticle {
 <7> future.fail(result.cause()) means we failed and should throw an error
 
 
-==== indexHanlder
+==== indexHandlder
 
 Obviously, our code won't compile at the moment because we don't have a method, "indexHandler."  So let's create that method:
 
