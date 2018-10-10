@@ -76,7 +76,7 @@ Now its time to add the Router to our start method just above the existing code:
 
 [source,java]
 ....
-    import io.vertx.reactivex.ext.web; <1>
+    
     import io.vertx.reactivex.ext.web.Router;
     ...
     Router router = Router.router(vertx); <3>
