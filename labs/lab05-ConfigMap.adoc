@@ -90,13 +90,18 @@ spec:
             # Define the items from the config map to mount
             items:
             - key: insult-config.json
-              path: config.json
+              path: insult-config.json
             # Volume name (used as reference below)
           name: config
       containers:
         - env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
             - name: VERTX_CONFIG_PATH
-              value: '/deployments/conf/config.json'
+              value: '/deployments/conf/insult-config.json'
           volumeMounts:
             - name: config
               mountPath: /deployments/conf
@@ -112,13 +117,24 @@ The system properties
 
 The environment variables
 
-A conf/config.json file. This path can be overridden using the vertx-config-path system property or VERTX_CONFIG_PATH environment variable.
-
-
-In the above deployment.yml file we are passing an env variable called 'VERTX_CONFIG_PATH' to let vertx look at the path 'deployments/confg/config.json' for the configuration file that is going to mounted when the container starts in kubernetes
+ This path can be overridden using the vertx-config-path system property or VERTX_CONFIG_PATH environment variable.
 
 
 When we run the below fabric8 command, plugin recognizes the deployment.yml and create the container spec so that kubernetes would mount the config map 
+
+=== Edit src/main/java/io/vertx/starter/MainVerticle.java
+
+Replace the config section 
+
+[code,java]
+....
+ConfigStoreOptions localConfig = new ConfigStoreOptions()
+		      .setType("file")
+		      .setFormat("json")
+		      .setOptional(true)
+	      .setConfig(new JsonObject().put("path", "conf/insult-config.json"));
+....
+We are changing the Path to read the properties file from conf/insult-config.json.
 
 == Build and Deploy the InsultServiceGateway to OpenShift
 
