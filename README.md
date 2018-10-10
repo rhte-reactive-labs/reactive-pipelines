@@ -10,4 +10,4 @@ add in a WebClient that calls the actual endpoints
 4. Lab5 - CircuitBreaker
 5. Lab 6 - Health Check
 5. Lab 7 - Event Bus
-6. Lab 8 - PersistencePersistence
+6. Lab 8 - Persistence
