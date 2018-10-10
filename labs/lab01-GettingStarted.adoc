@@ -20,13 +20,13 @@ Using the text editor of your choice open the pom.xml file.
 
 [source,xml]
 ....
-  <groupId>io.vertx.starter</groupId>    // <1>
+  <groupId>io.vertx.starter</groupId>    // (1)
   <artifactId>vertx-insult-gateway</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <properties>
     <vertx.version>3.5.2</vertx.version>     
-    <main.verticle>io.vertx.starter.MainVerticle</main.verticle>     // <2>
+    <main.verticle>io.vertx.starter.MainVerticle</main.verticle>     // (2)
   </properties>
 ....
 
@@ -147,7 +147,7 @@ public class MainVerticleTest {
   @Before
   public void setUp(TestContext tc) {
     vertx = Vertx.vertx(); <1>
-    vertx.deployVerticle(MainVerticle.class.getName(), tc.asyncAssertSuccess()); // <2>
+    vertx.deployVerticle(MainVerticle.class.getName(), tc.asyncAssertSuccess()); // (2)
   }
 
   @After
@@ -156,9 +156,9 @@ public class MainVerticleTest {
   }
 
   @Test
-  public void testThatTheServerIsStarted(TestContext tc) { // <3>
+  public void testThatTheServerIsStarted(TestContext tc) { // (3)
     Async async = tc.async();
-    vertx.createHttpClient().getNow(8080, "localhost", "/", response -> { // <4>
+    vertx.createHttpClient().getNow(8080, "localhost", "/", response -> { // (4)
       tc.assertEquals(response.statusCode(), 200); <5>
       response.bodyHandler(body -> {
         tc.assertTrue(body.length() > 0);
