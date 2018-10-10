@@ -159,7 +159,7 @@ public class MainVerticleTest {
   public void testThatTheServerIsStarted(TestContext tc) { // (3)
     Async async = tc.async();
     vertx.createHttpClient().getNow(8080, "localhost", "/", response -> { // (4)
-      tc.assertEquals(response.statusCode(), 200); <5>
+      tc.assertEquals(response.statusCode(), 200); // (5)
       response.bodyHandler(body -> {
         tc.assertTrue(body.length() > 0);
         tc.assertTrue(body.toString().equalsIgnoreCase("Hello Vert.x!"));
