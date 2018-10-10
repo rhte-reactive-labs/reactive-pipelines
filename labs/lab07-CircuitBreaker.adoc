@@ -12,7 +12,7 @@ A circuit breaker is a great way to protect your system against flaky service an
 
 We will change our webclients in our previous labs use circuit breaker module. 
 
-===Vert.x Circuit Breaker
+=== Vert.x Circuit Breaker
 
 is an implementation of the Circuit Breaker pattern for Vert.x.
 
