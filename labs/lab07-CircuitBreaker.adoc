@@ -1,1 +1,222 @@
 
+= Lab 07 : In this lab we are going to learn about CircuitBreaker and how to apply to our use case.
+:source-highlighter: coderay
+
+
+A circuit breaker is an object monitoring an interaction, for instance the calls between our proxy and the flaky service. It starts in the closed state. In this state, the circuit breaker forward the calls to the service and monitor the outcome (successes or failures). When the circuit breaker reaches an amount of failure, it switches to the open state. In this state, the service is not called anymore, but a fallback response is used. After some specific time, the circuit breaker goes to the half-open state and let the next request pass and hit the service. Depending on the result of this request, the circuit breaker goes back to the open state (on failure) or the closed state (on success).
+
+
+A circuit breaker is a great way to protect your system against flaky service and also gives them time to recover when they start failing (open state). When the service is back on track, and thanks to the half-open state, your system is going to auto-recover and restart using the service.
+
+We will change our webclients in our previous labs use circuit breaker module. 
+
+===Vert.x Circuit Breaker
+
+is an implementation of the Circuit Breaker pattern for Vert.x.
+
+It keeps track of the number of failures and opens the circuit when a threshold is reached. Optionally, a fallback is executed.
+
+Supported failures are:
+
+failures reported by your code in a Future
+
+exception thrown by your code
+
+uncompleted futures (timeout)
+
+Operations guarded by a circuit breaker are intended to be non-blocking and asynchronous in order to benefit from the Vert.x execution model.
+
+
+
+
+=== 
+=== Using the vert.x circuit breaker
+
+Add the following the dependencies to your pom.xml
+
+[code, xml]
+----
+<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-circuit-breaker</artifactId>
+  <version>3.5.4</version>
+</dependency>
+----
+
+
+
+=== Edit src/main/java/io/vert.x/starter/InsultGatewayVerticle.java 
+
+Define the circuitbreaker config opts and import the class 
+
+[code,java]
+----
+import io.vertx.circuitbreaker.CircuitBreakerOptions;
+...
+
+
+
+CircuitBreakerOptions breakerOpts = new CircuitBreakerOptions()
+			      .setFallbackOnFailure(true)
+			      .setMaxFailures(2)
+			      .setMaxRetries(2)
+			      .setResetTimeout(config().getInteger(GATEWAY_CIRCUIT_TIMEOUT, 1000))
+			      .setTimeout(config().getInteger(GATEWAY_RESET_TIMEOUT, 1000));
+----
+
+
+In the above code, we are configuring the circuitbreaker with options like timeout, retries, failures etc.
+
+
+
+=== Initilze the cicrcuit breker objects
+
+
+[code,java]
+----
+clientSpringbootBreaker = CircuitBreaker
+      .create("nounSpringBoot", vertx, breakerOpts)
+      .openHandler(t -> circuitBreakerHandler("adj", "[open]"));
+
+
+    clientSwarmBreaker = CircuitBreaker
+      .create("swarmAdj", vertx, breakerOpts)
+      .openHandler(t -> circuitBreakerHandler("swarmAdj", "[open]"));
+
+
+    clientVertxBreaker = CircuitBreaker
+      .create("vertxAdj", vertx, breakerOpts)
+      .openHandler(t -> circuitBreakerHandler("vertxAdj", "[open]"));
+----
+In the above code, we are initializing our circuitbreaker , with the options we created early along with the handler to call when services are down. 
+
+
+
+=== Replace the following three methods in the same class - src/main/java/io/vert.x/starter/InsultGatewayVerticle.java
+
+[code,java]
+----
+
+import io.vertx.reactivex.circuitbreaker.CircuitBreaker; // import following classes
+import io.vertx.circuitbreaker.CircuitBreakerOptions;
+import io.vertx.reactivex.core.CompositeFuture;
+.....
+.....
+
+  io.vertx.reactivex.core.Future<JsonObject> getNoun() {
+
+
+    return clientSpringbootBreaker.executeWithFallback(fut ->
+      clientSpringboot.get("/api/noun")
+        .timeout(3000)
+        .rxSend()
+        .doOnError(e -> LOG.error("REST Request failed", e))
+        .map(HttpResponse::bodyAsJsonObject)
+        .subscribe(
+          j -> fut.complete(j),
+          e -> fut.fail(e)
+        ), t -> circuitBreakerHandler("noun", "[SpringBoot noun failure]"));
+
+
+    //eturn fut;
+  }
+
+
+  io.vertx.reactivex.core.Future<JsonObject> getAdjective() {
+
+
+    return clientSwarmBreaker.executeWithFallback(fut ->
+      clientSwarm.get("/api/adjective")
+        .timeout(3000)
+        .rxSend()
+        .doOnError(e -> LOG.error("REST Request failed", e))
+        .map(HttpResponse::bodyAsJsonObject)
+        .subscribe(
+          j -> fut.complete(j),
+          e -> fut.fail(e)
+        ), t -> circuitBreakerHandler("adjective", "[Swarm adjective failure]"));
+  }
+
+  io.vertx.reactivex.core.Future<JsonObject> getAdjective2() {
+    return clientVertxBreaker.executeWithFallback(fut ->
+      clientVertx.get("/api/adjective")
+        .timeout(3000)
+        .rxSend()
+        .doOnError(e -> LOG.error("REST Request failed", e))
+        .map(HttpResponse::bodyAsJsonObject)
+        .subscribe(
+          j -> fut.complete(j),
+          e -> fut.fail(e)
+        ), t -> circuitBreakerHandler("adjective", "[Vertx adj failure]"));
+  }
+
+----
+We are wrapping our WebClient with a CircuitBreaker proxy API and registered a callback for catching failures and calling the fallback method ..in this case 'cicuitBreakerHandler' method.
+
+Please make sure to import proper classes.
+
+=== Build and deploy to openshift
+
+Please make sure you are on oc project devenv-{username}
+
+
+
+[code,script]
+....
+oc project devenv-{username}
+mvn clean fabric8:deploy -Popenshift
+
+
+INFO] F8: Using OpenShift at https://master.435b.rhte.opentlc.com:443/ in namespace devenv-user1 with manifest /Users/rmaddali/workshops/reactive/techexchange/vertx-insult-gateway/vertx-mvn-starter/vertx-insult-gateway/target/classes/META-INF/fabric8/openshift.yml
+[INFO] OpenShift platform detected
+[INFO] Using project: devenv-user1
+Trying internal type for name:Service
+Trying internal type for name:DeploymentConfig
+Trying internal type for name:Route
+[INFO] Updating a Service from openshift.yml
+[INFO] Updated Service: target/fabric8/applyJson/devenv-user1/service-vertx-insult-gateway.json
+[INFO] Using project: devenv-user1
+[INFO] Updating DeploymentConfig from openshift.yml
+[INFO] Updated DeploymentConfig: target/fabric8/applyJson/devenv-user1/deploymentconfig-vertx-insult-gateway.json
+[INFO] F8: HINT: Use the command `oc get pods -w` to watch your pods start up
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 49.283 s
+[INFO] Finished at: 2018-10-10T14:03:52-04:00
+....
+
+
+=== Testing CircuitBreaker
+
+
+[code, script]
+----
+oc scale --replicas=0 dc/wildflyswarm-adj
+----
+
+Go to http://vertx-insult-gateway-devenv-{USERID}.apps.{GUID}.rhte.opentlc.com/api/insult
+
+You should see following response
+
+[code,json]
+----
+{
+noun: "bum-bailey",
+adjectives: [
+"[Swarm adjective failure]",
+"elf-skinned"
+]
+}
+----
+
+Notice in the response, you are seeing swarm adjective failures instead of the actual adjective.
+
+Student TODO: Bring the same pod up again and check the message 
+
+
+
+
+
+
+
