@@ -39,21 +39,21 @@ Create a new file : src/main/resources/insult-config.json
 [code,json]
 ....
 {
-	"env": "local",
-	"insults.address": "insults-address",
-	"db.url": "jdbc:hsqldb:mem:testdb;shutdown=true",
-	"db.driver": "org.hsqldb.jdbcDriver",
-	"db.user": "sa",
-	"db.password": "sa",
-	"query.all-insults": "SELECT * FROM INSULTS",
-	"gateway.circuit-timeout": 1000,
-	"gateway.reset-timeout": 1000,
-	"gateway.host.springboot.noun": "thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com", [1]
-	"gateway.host.springboot.noun.port": 8080,
-	"gateway.host.wildfly-swarm.adj": "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com",[2]
-	"gateway.host.wildfly-swarm.adj.port": 8080,
-	"gateway.host.vertx.adj": "spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com", [3]
-	"gateway.host.vertx.adj.port": 8080
+"env": "local",
+"insults.address": "insults-address",
+"db.url": "jdbc:hsqldb:mem:testdb;shutdown=true",
+"db.driver": "org.hsqldb.jdbcDriver",
+"db.user": "sa",
+"db.password": "sa",
+"query.all-insults": "SELECT * FROM INSULTS",
+"gateway.circuit-timeout": 1000,
+"gateway.reset-timeout": 1000,
+"gateway.host.springboot.noun": "springboot-noun-service-devenv-user2.apps.9249.rhte.opentlc.com",
+"gateway.host.springboot.noun.port": 80,
+"gateway.host.wildfly-swarm.adj": "wildflyswarm-adj-devenv-user2.apps.9249.rhte.opentlc.com",
+"gateway.host.wildfly-swarm.adj.port": 80,
+"gateway.host.vertx.adj": "vertx-adjective-service-devenv-user2.apps.9249.rhte.opentlc.com",
+"gateway.host.vertx.adj.port": 80
 }
 ....
 
