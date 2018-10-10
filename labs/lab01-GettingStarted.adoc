@@ -146,7 +146,7 @@ public class MainVerticleTest {
 
   @Before
   public void setUp(TestContext tc) {
-    vertx = Vertx.vertx(); <1>
+    vertx = Vertx.vertx(); // (1)
     vertx.deployVerticle(MainVerticle.class.getName(), tc.asyncAssertSuccess()); // (2)
   }
 
