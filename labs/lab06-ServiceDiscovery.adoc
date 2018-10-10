@@ -38,7 +38,7 @@ The simplest way to discover things inside Kubernetes is via DNS which does not 
 
 Service discovery via DNS
 
-In our example,  for a service with springbooot-noun  you can just hard code the host name springbooot-nounr in your application code.
+In our example,  for a service with springbooot-noun  you can just hard code the host name springbooot-nounr in your application code but we are going to use configmap tha we created in the last session to point the urls to services running inside the openshift.
 
 
 ==== Change insult-config.yml 
