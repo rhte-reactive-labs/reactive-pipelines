@@ -249,19 +249,12 @@ public class MainVerticle extends AbstractVerticle {
 === Package the app  
 
 
-[source,shell]
-....
-
-mvn clean package
-
-....
-
 Run the following command. It should pass
 
 [source,shell]
 ....
 
-mvn clean test
+mvn clean package
 
 [INFO] Including com.fasterxml.jackson.core:jackson-annotations:jar:2.9.5 in the shaded jar.
 [INFO] Including io.vertx:vertx-rx-java2:jar:3.5.2 in the shaded jar.
