@@ -36,7 +36,7 @@ https://vertx.io/docs/vertx-web/java/
 
 We will be using Vert.x-Web to build our endpoints.  
 
-Vert.x-Web is one of many Vert.x modules that extend the core toolkit.  add the following dependency in your pom.xml.  You can 
+Vert.x-Web is one of many Vert.x modules that extend the core toolkit.  add the following dependency in your pom.xml. 
 
 [source,xml]
 ....
