@@ -64,6 +64,21 @@ Create a new file : src/main/resources/insult-config.json
 
 === Read the Configuration
 
+Edit pom.xml and add below dependency that we need for reading configurations.
+
+[code,xml]
+----
+ <dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-config</artifactId>
+</dependency>
+
+----
+
+
+
+
+
 Edit src/main/java/io/vertx/starter/MainVerticle.java 
 
 First create a method to initialized to read the configuration from the file and make it available to the application:
