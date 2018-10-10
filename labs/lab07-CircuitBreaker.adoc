@@ -217,8 +217,108 @@ Notice in the response, you are seeing swarm adjective failures instead of the a
 Student TODO: Bring the same pod up again and check the message 
 
 
+===  Circuit Breaker State
+
+Lets implement some more functionality to know the status of circuit breaker
+
+
+=== Edit src/main/java/io/vert.x/starter/InsultGatewayVerticle.java 
+
+[code, java]
+----
+router.get("/api/cb-state").handler(this::checkHealth);
+----
+Here we are defining a new endpoint to get the status of the circuit breaker . Now, add a new method as below . Please make sure to import the class. 
+[code, java]
+----
+ import io.vertx.circuitbreaker.CircuitBreakerState;
+ .
+ ...
+
+public void checkHealth(RoutingContext rc) {
+    // Request 2 adjectives and a noun in parallel, then handle the results
+
+
+    boolean allBreakersClosed = (
+      (clientSpringbootBreaker.state().equals(CircuitBreakerState.CLOSED)) &&
+        (clientSwarmBreaker.state().equals(CircuitBreakerState.CLOSED)) && (clientVertxBreaker.state().equals(CircuitBreakerState.CLOSED)));
+
+
+    JsonObject health = new JsonObject()
+      .put("noun", new JsonObject()
+        .put("failures", clientSpringbootBreaker.failureCount())
+        .put("state", clientSpringbootBreaker.state().toString()))
+      .put("Swarmadjective", new JsonObject()
+        .put("failures", clientSwarmBreaker.failureCount())
+        .put("state", clientSwarmBreaker.state().toString()))
+      .put("Vertxadjective", new JsonObject()
+        .put("failures", clientVertxBreaker.failureCount())
+        .put("state", clientVertxBreaker.state().toString()))
+      .put("status", allBreakersClosed ? "OK" : "UNHEALTHY");
+
+
+    rc.response().putHeader("content-type", "application/json").end(health.encodePrettily());
+
+
+  }
+
+----
+
+We are adding a new method called, checkHealth, which checks for state of the circuit breaker and build as json object as response
 
 
 
+===  Build and deploy
+
+[code, script]
+----
+mvn clean fabric8:deploy -DskipTests -Popenshift
+
+[INFO] OpenShift platform detected
+[INFO] Using project: devenv-user1
+Trying internal type for name:Service
+Trying internal type for name:DeploymentConfig
+Trying internal type for name:Route
+[INFO] Updating a Service from openshift.yml
+[INFO] Updated Service: target/fabric8/applyJson/devenv-user1/service-vertx-insult-gateway.json
+[INFO] Using project: devenv-user1
+[INFO] Updating DeploymentConfig from openshift.yml
+[INFO] Updated DeploymentConfig: target/fabric8/applyJson/devenv-user1/deploymentconfig-vertx-insult-gateway.json
+[INFO] F8: HINT: Use the command `oc get pods -w` to watch your pods start up
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+
+
+
+----
+
+Check the following URL and you should below response 
+
+
+http://vertx-insult-gateway-devenv-{USERID}.apps.{GUID}.rhte.opentlc.com/api/cb-state
+
+[code, json]
+....
+{
+noun: {
+failures: 0,
+state: "CLOSED"
+},
+Swarmadjective: {
+failures: 0,
+state: "CLOSED"
+},
+Vertxadjective: {
+failures: 0,
+state: "CLOSED"
+},
+status: "OK"
+}
+....
+
+
+
+TODO : Play around with circuit breaker, shuting down the pods and bring them up and check the state of the circuit breaker as above. 
 
 
