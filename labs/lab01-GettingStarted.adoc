@@ -180,6 +180,6 @@ public class MainVerticleTest {
 <5>  Async handler to for a callback when the response is ready and asserting on the response
 <6>  Change this code to "Hello, Vert.x Insult Gateway!"
 
-Rinse and repeat.  Your test should pass.  If it doesn't raise your hand and ask one of the guys proctoring the exam for help.
+Rinse and repeat.  Your test should pass.  If it doesn't raise your hand and ask one of the guys proctoring the lab for help.
 
 Continue to Lab 2 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab02-Vertx%20Rest%20Basics.adoc
