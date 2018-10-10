@@ -102,7 +102,7 @@ You should see the following message:
 INFO: Succeeded in deploying verticle
 ....
 
-Open [text link] ... http://localhost:8080 ...  You should see, "Hello, Vert.x!"
+Open link:http://localhost:8080[_blank]  You should see, "Hello, Vert.x!"
 
 Ctrl + c to stop the server
 
