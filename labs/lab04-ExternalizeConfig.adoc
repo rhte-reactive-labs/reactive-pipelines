@@ -76,7 +76,8 @@ package io.vertx.starter;
 
 import io.vertx.core.Future;
 import io.vertx.reactivex.core.AbstractVerticle;
-	 public class MainVerticle extends AbstractVerticle {
+
+public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Future<Void> startFuture) {
