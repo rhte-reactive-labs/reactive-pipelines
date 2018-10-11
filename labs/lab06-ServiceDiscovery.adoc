@@ -50,14 +50,15 @@ oc edit configmap insult-config -o yaml
 
 We are changing the service address of the 3 services to the services running the cluster.
 
+[code,script]
+....
 gateway.host.springboot.noun
 gateway.host.springboot.noun.port
 gateway.host.wildfly-swarm.adj
 gateway.host.wildfly-swarm.adj.port
 gateway.host.vertx.adj
 gateway.host.vertx.adj.port
-
-
+....
 
 Here is the final configmap. Please make sure to  substitute the userid with your lab provided userid and guid.
 
