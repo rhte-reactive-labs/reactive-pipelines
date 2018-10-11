@@ -57,13 +57,5 @@ router.get("/api/health/readiness").handler(rc -> rc.response().end("OK"));
 3. click on vertx-insult-gateway-pipeline
 4. Hit ' Start Pipe line'
 
-       
-    
-    
-    
-    
-    
-    
 
-
-
+Continue to Lab 9 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab09-EventBus.adoc
