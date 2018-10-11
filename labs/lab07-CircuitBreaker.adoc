@@ -254,7 +254,7 @@ Here is the class after adding above code
 
 
 [code,java]
----
+----
 package io.vertx.starter;
 
 import io.vertx.core.Future;
@@ -435,7 +435,7 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 	  }
 
 	}
----
+----
 
 
 In the above code, we are initializing our circuitbreaker , with the options we created early along with the handler to call when services are down. 
