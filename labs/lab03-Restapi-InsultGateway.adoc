@@ -274,6 +274,6 @@ mvn clean package
 [INFO] Finished at: 2018-10-08T01:40:54-04:00
 [INFO] ------------------------------------------------------------------------
 
-...
+....
    
 Continue to Lab 4 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab04-ExternalizeConfig.adoc
