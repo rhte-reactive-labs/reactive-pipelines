@@ -218,6 +218,7 @@ adjectives: [
 2. Go to OCP console -> pipelines-{userid} project - > builds ->pipelines
 
 3. click on vertx-insult-gateway-pipeline
-4. Hit ' Start Pipe line'
+4. Hit ' Start Pipeline'
 
 
+Continue to Lab 6 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab06-ServiceDiscovery.adoc
