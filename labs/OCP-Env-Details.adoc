@@ -14,19 +14,19 @@ Once you login to console, copy the login command on the right corner of the ocp
 
 Once you login to your OCP env, please look at below projects
 
-devenv-{userid}
-stageenv-{userid}
-pipelines-{userid}
+devenv-{userid} +
+stageenv-{userid} + 
+pipelines-{userid} +
 
 ====  pipelines-{userid} PROJECT 
 
-1. Jenkins env is already provisioned
+1. Jenkins env is already provisioned +
 2. Go to pipelines, you should see 4 pipelines that are already defined and ran successfully.
 
 
 ====  devenv-{userid} PROJECT   - Developement namespace
 
-1. You should all the 4 services(springboot,wildflyswarm,vertx adj,vertx gateway) running in this. 
+1. You should all the 4 services(springboot,wildflyswarm,vertx adj,vertx gateway) running in this.  +
 2. click on each route url to see everything is working 
 
 
