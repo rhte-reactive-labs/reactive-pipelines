@@ -86,66 +86,113 @@ Create a new file : src/main/resources/insult-config.json
 <3> external adjective service using spring boot on ocp cluster
  
 
-=== Read the Configuration
+=== Make the Configuration available to the application
 
 Edit src/main/java/io/vertx/starter/MainVerticle.java 
 
-First create a method to initialized to read the configuration from the file and make it available to the application:
+Our initConfigRetriever is returning an RxJava Maybe which changes the way we will call it.  RxJava's fluent API makes it easy to check for an error and then pass the configuration to our dependent Verticles.
 
+NOTE: This is our first use of Vert.x's rxJava2 support.
+
+The entire class is printed below, but at the moment we are only going to focus on the changes to the start(Future<Void> startFuture.)  We will address reading the configuration next.
 
 [code,java]
 ....
 
+package io.vertx.starter;
+
 import io.reactivex.Maybe;
-import io.vertx.core.json.JsonObject;
-import io.vertx.config.ConfigStoreOptions;
 import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.config.ConfigRetriever;
-...
-	 
-	private Maybe<JsonObject> initConfigRetriever() {     <1>
+import io.vertx.reactivex.core.AbstractVerticle;
+
+public class MainVerticle extends AbstractVerticle {
+
+	@Override
+	public void start(Future<Void> startFuture) {
+
+		initConfigRetriever()          // 1
+	      .doOnError(startFuture::fail)          // 2     
+	      .subscribe(ar -> {          //3     
+	        vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar));          //4
+	        startFuture.complete();          //5     
+	      });
+      }
+	
+	private Maybe<JsonObject> initConfigRetriever() {
 
 		// Load the default configuration from the classpath
-		ConfigStoreOptions localConfig = new ConfigStoreOptions()     <2>
+		ConfigStoreOptions localConfig = new ConfigStoreOptions()
 			.setType("file")
 			.setFormat("json")
 			.setConfig(new JsonObject().put("path", "insult-config.json"));
 
 		// Add the default and container config options into the ConfigRetriever
-		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()     <3>
+		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()
 			.addStore(localConfig);
 
 		// Create the ConfigRetriever and return the Maybe when complete
-		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe(); <4>
+		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe();
 	}
+}
 
 ....
 
-<1> Our method returns a "Maybe."  This is an RxJava object that will return nothing, a single item, or throw an error.  The one item we are expecting is a ConfigRetriever
-<2> We create a ConfigStoreOptions, "localConfig" for the json file we just added.  Later when we deploy to OpenShift we can add a ConfigMap
-<3> We add the file configuration to the ConfigRetrieverOptions.  Here we just load the contents of the insult-config.json file located in the src/main/resources directory. The configuration is a JsonObject. Vert.x uses JSON heavily, so you are going to see a lot of JSON
-<4> Create and return the ConfigRetriever
+1.  We call the initConfigRetriever method and then manipulate it with RxJava's fluent API
+2.  In the case of an error reading the configuration we fail startup
+3.  The call to "subscribe" kicks off the method.  RxJava methods don't do anything until "subscribe" is called
+4.  The result of subscribe, "ar," is our configuration.  We pass "ar" to our Lambda expression, and it in turn passes it into vertx.deployVerticle as the configuration for InsultGateWayVerticle 
+5.  We complete successfully
 
-NOTE: The method "rxGetConfig()" is how RxJava is baked into basic Vert.x methods 
-
-=== Make the Configuration available to the application
-
-Our initConfigRetriever is returning an RxJava Maybe which changes the way we will call it.  RxJava's fluent API makes it easy to check for an error and then pass the configuration to our dependent Verticles.
+==== Loading the Configuration
 
 [code,java]
 ....
+
+package io.vertx.starter;
+
+import io.reactivex.Maybe;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
+import io.vertx.reactivex.config.ConfigRetriever;
+import io.vertx.reactivex.core.AbstractVerticle;
 
-  @Override
-  public void start(Future<Void> startFuture) {
+public class MainVerticle extends AbstractVerticle {
 
-    initConfigRetriever()     <1>
-      .doOnError(startFuture::fail)     <2>
-      .subscribe(ar -> {     <3>
-        vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
-        
-        startFuture.complete();     <4>
-      });
+	@Override
+	public void start(Future<Void> startFuture) {
+
+		initConfigRetriever()     
+	      .doOnError(startFuture::fail)     
+	      .subscribe(ar -> {     
+	        vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
+	        startFuture.complete();     
+	      });
+      }
+	
+	private Maybe<JsonObject> initConfigRetriever() {    // (1)
+
+		// Load the default configuration from the classpath
+		ConfigStoreOptions localConfig = new ConfigStoreOptions()     //(2)
+			.setType("file")
+			.setFormat("json")
+			.setConfig(new JsonObject().put("path", "insult-config.json"));
+
+		// Add the default and container config options into the ConfigRetriever
+		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()     //(3)
+			.addStore(localConfig);
+
+		// Create the ConfigRetriever and return the Maybe when complete
+		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe(); //(4)
+	}
+}
 
 ....
 
@@ -153,6 +200,10 @@ import io.vertx.core.DeploymentOptions;
 <2>  Check for an error and fail the start method if we need to
 <3>  "Subscribe" or wait until the method is done and then execute the Lambda to deploy our dependent verticles with the returned configuration
 <4>  Signal successful startup
+
+== Call the Microservices
+
+It's microservices time!
 
 === Edit src/main/java/io/vertx/starter/InsultGatewayVerticle.java 
 
@@ -296,13 +347,6 @@ public class InsultGatewayVerticle extends AbstractVerticle{
 	  }
 		
 	}
-
-
-
-
-
-
-
 
 ....
 
