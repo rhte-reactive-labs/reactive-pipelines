@@ -84,28 +84,7 @@ Here is the final configmap. Please make sure to  substitute the userid with you
 If you notice the hostname for all the three services are pointing to the kubernetes services. 
 
 
-==== Build and deploy to OCP
-[code,json]
-....
-mvn clean package Dmaven.test.skip=true
 
-INFO] OpenShift platform detected
-[INFO] Using project: devenv-user1
-Trying internal type for name:Service
-Trying internal type for name:DeploymentConfig
-Trying internal type for name:Route
-[INFO] Updating a Service from openshift.yml
-[INFO] Updated Service: target/fabric8/applyJson/devenv-user1/service-vertx-insult-gateway.json
-[INFO] Using project: devenv-user1
-[INFO] Updating DeploymentConfig from openshift.yml
-[INFO] Updated DeploymentConfig: target/fabric8/applyJson/devenv-user1/deploymentconfig-vertx-insult-gateway.json
-[INFO] F8: HINT: Use the command `oc get pods -w` to watch your pods start up
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 37.558 s
-[INFO] Finished at: 2018-10-10T12:17:01-04:00
-....
 [code,json]
 
 === Deploy to openshift
