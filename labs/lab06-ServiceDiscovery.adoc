@@ -117,12 +117,15 @@ ConfigStoreOptions defaultConfig = new ConfigStoreOptions()
 ....
 
 Notice the type is set to configmap. 
+
 More reading on using Kubernetes configmap:
+
 https://vertx.io/docs/vertx-config/java/#_kubernetes_configmap_store
+
 https://github.com/InfoSec812/vertx-configmap-example
 
 
-
+Continue to Lab 7 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab07-CircuitBreaker.adoc
 
 
 
