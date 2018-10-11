@@ -89,14 +89,19 @@ If you notice the hostname for all the three services are pointing to the kubern
 
 === Deploy to openshift
 
-Checkin your code to github
 
 
-Go to OCP console → pipelines-{userid} project - > builds →pipelines
+1. Checkin your code to github
 
-click on vertx-insult-gateway-pipeline
+    git add.
+    git commit -m "lab5" 
+    git push 
 
-Hit ' Start Pipe line'
+2. Go to OCP console -> pipelines-{userid} project - > builds ->pipelines
+
+3. click on vertx-insult-gateway-pipeline
+4. Hit ' Start Pipe line'
+
 
 Note: ConfigMap changes are automatically detected if we are using vertx-config-kubernetes-configmap module.
 
