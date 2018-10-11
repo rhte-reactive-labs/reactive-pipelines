@@ -108,7 +108,16 @@ Trying internal type for name:Route
 ....
 [code,json]
 
-==== Check the app url by going to http://vertx-insult-gateway-devenv-{youruserid}.apps.{GUID}.rhte.opentlc.com/
+=== Deploy to openshift
+
+Checkin your code to github
+
+
+Go to OCP console → pipelines-{userid} project - > builds →pipelines
+
+click on vertx-insult-gateway-pipeline
+
+Hit ' Start Pipe line'
 
 Note: ConfigMap changes are automatically detected if we are using vertx-config-kubernetes-configmap module.
 
