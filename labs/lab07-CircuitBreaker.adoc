@@ -264,30 +264,21 @@ public void checkHealth(RoutingContext rc) {
 
 ----
 
-We are adding a new method called, checkHealth, which checks for state of the circuit breaker and build as json object as response
+We added a new method called, checkHealth, which checks for state of the circuit breaker and build as json object as response
 
+==== Deploy to openshift
 
+Checkin your code to github
 
-===  Build and deploy
+git add.
+git commit -m "lab7"
+git push
+Go to OCP console → pipelines-{userid} project - > builds →pipelines
 
-[code, script]
-----
-mvn clean fabric8:deploy -DskipTests -Popenshift
+click on vertx-insult-gateway-pipeline
 
-[INFO] OpenShift platform detected
-[INFO] Using project: devenv-user1
-Trying internal type for name:Service
-Trying internal type for name:DeploymentConfig
-Trying internal type for name:Route
-[INFO] Updating a Service from openshift.yml
-[INFO] Updated Service: target/fabric8/applyJson/devenv-user1/service-vertx-insult-gateway.json
-[INFO] Using project: devenv-user1
-[INFO] Updating DeploymentConfig from openshift.yml
-[INFO] Updated DeploymentConfig: target/fabric8/applyJson/devenv-user1/deploymentconfig-vertx-insult-gateway.json
-[INFO] F8: HINT: Use the command `oc get pods -w` to watch your pods start up
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
+Hit ' Start Pipe line'
+
 
 
 
