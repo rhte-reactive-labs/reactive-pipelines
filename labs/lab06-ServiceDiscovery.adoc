@@ -107,12 +107,14 @@ Note: ConfigMap changes are automatically detected if we are using vertx-config-
 
 Example  way to use it. 
 
+[code,source]
+....
 ConfigStoreOptions defaultConfig = new ConfigStoreOptions()
 			      .setType("configmap")
 			      .setFormat("json")
 			      .setOptional(true)
 		      .setConfig(new JsonObject().put("path", "conf/insult-config.json"));
-          
+....
           
  Notice the type is set to configmap. 
  
