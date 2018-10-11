@@ -6,6 +6,25 @@ Step 1. Go to following url -> www.opentlc.com/gg/gg.cgi?profile=rhtemgr +
 Step 2: Choose a1016(Reactive pipelines using Vert.x) and the key is react +
 Step 3: you would presented with id and GUID and instructions to login to developer workstation. Please note them down as we will be using them through out the lab. +
 
+
+
+
+====  Kickoff build on OpenShift
+
+
+1. Go back to pipelines-{userid} PROJECT 
+2. builds ->pipelines->select 'insult-service-gateway'
+3. click on edit, there please give your forked github URL
+4. Start the pipeline
+
+While the build is going, please continue the lab.
+
+
+
+
+
+
+
 Continue to Lab1 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab01-GettingStarted.adoc
 
 
