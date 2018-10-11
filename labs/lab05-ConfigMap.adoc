@@ -177,47 +177,39 @@ We are changing the Path to read the properties file from conf/insult-config.jso
 
 mvn clean package
 
-[INFO] Updating a Service from openshift.yml
-[INFO] Updated Service: target/fabric8/applyJson/vertx-adjective/service-vertx-insult-gateway.json
-[INFO] Using project: vertx-adjective
-[INFO] Updating DeploymentConfig from openshift.yml
-[INFO] Updated DeploymentConfig: target/fabric8/applyJson/vertx-adjective/deploymentconfig-vertx-insult-gateway.json
-[INFO] F8: HINT: Use the command `oc get pods -w` to watch your pods start up
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time: 01:01 min
-[INFO] Finished at: 2018-10-09T00:26:41-04:00
+[INFO] Total time: 4.888 s
+[INFO] Finished at: 2018-10-10T22:38:08-04:00
 [INFO] ------------------------------------------------------------------------
-....
 
 
-Go to the OpenShift console and look at the logs for the containers, you should see something like below to indicate that config map is been reloaded
+== Run the app locallly
 
-[code,script]
+http://localhost:8080/api/insult
 
-....
-Starting the Java application using /opt/run-java/run-java.sh ...
-exec java -Dvertx.cacheDirBase=/tmp -Dvertx.disableDnsResolver=true -javaagent:/opt/jolokia/jolokia.jar=config=/opt/jolokia/etc/jolokia.properties -javaagent:/opt/prometheus/jmx_prometheus_javaagent.jar=9779:/opt/prometheus/prometheus-config.yml -Xmx768m -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1 -XX:CICompilerCount=2 -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40 -XX:+ExitOnOutOfMemoryError -cp . -jar /deployments/vertx-insult-gateway-1.0-SNAPSHOT-fat.jar
-I> No access restrictor found, access to any MBean is allowed
-Jolokia: Agent started with URL https://10.1.3.14:8778/jolokia/ 
-Oct 09, 2018 4:28:57 AM io.vertx.core.impl.launcher.commands.VertxIsolatedDeployer
-INFO: Succeeded in deploying verticle
-Oct 09, 2018 4:28:57 AM io.vertx.config.impl.ConfigRetrieverImpl
+[code,json]
+----
+{
+noun: "bum-bailey",
+adjectives: [
+"onion-eyed",
+"scurvy-valiant"
+]
+}
+----
+== Deploy to openshift 
 
-*INFO: Config file path: /deployments/conf/config.json, format:json *
+1. Checkin your code to github
 
-confg vertx=spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com
-confg swarm=spring-boot-rest-http-springboot-adj.b9ad.pro-us-east-1.openshiftapps.com
-confg springboot=thorntail-rest-http-thorntail-noun.b9ad.pro-us-east-1.openshiftapps.com
-....
+    git add.
+    git commit -m "lab5" 
+    git push 
 
+2. Go to OCP console -> pipelines-{userid} project - > builds ->pipelines
 
-
-===Test the service 
-
-in the browser, hit the URL /api/insult and you should still see good response which means our API's is working in openshift
-
-
+3. click on vertx-insult-gateway-pipeline
+4. Hit ' Start Pipe line'
 
 
