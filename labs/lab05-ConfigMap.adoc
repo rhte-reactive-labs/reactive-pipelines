@@ -184,8 +184,16 @@ mvn clean package
 [INFO] Finished at: 2018-10-10T22:38:08-04:00
 [INFO] ------------------------------------------------------------------------
 
+....
 
 == Run the app locallly
+
+[code,bash]
+....
+
+java -jar ./target/vertx-insult-gateway-1.0-SNAPSHOT-fat.jar
+
+....
 
 http://localhost:8080/api/insult
 
