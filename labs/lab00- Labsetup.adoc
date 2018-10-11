@@ -9,15 +9,46 @@ Step 3: you would presented with id and GUID and instructions to login to develo
 
 
 
+== OpenShift Enivornment details
+
+https://master.{UID}.rhte.opentlc.com/console
+userid: provided to you
+password: provided to you
+
+Once you login to console, copy the login command on the right corner of the ocp console.
+
+==== SSH to client VM box with the credentials that are provided to you to run OCP commands 
+
+==== Paste the login command you copied (Ex: oc login )
+
+==== Pipelines 
+
+Once you login to your OCP env, please look at below projects
+
+devenv-{userid} +
+stageenv-{userid} + 
+pipelines-{userid} +
+
+====  pipelines-{userid} PROJECT 
+
+1. Jenkins env is already provisioned +
+2. Go to pipelines, you should see 4 pipelines that are already defined and ran successfully.
+
+
+====  devenv-{userid} PROJECT   - Developement namespace
+
+1. You should all the 4 services(springboot,wildflyswarm,vertx adj,vertx gateway) running in this.  +
+2. click on each route url to see everything is working 
+
+
+====  devenv-{userid} PROJECT - Test namespace
+
+
 ====  Kickoff build on OpenShift
 
 
 1. Go back to pipelines-{userid} PROJECT 
 2. builds ->pipelines->select 'insult-service-gateway'
-3. click on edit, there please give your forked github URL
-4. Start the pipeline
-
-While the build is going, please continue the lab.
 
 
 
