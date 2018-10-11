@@ -79,13 +79,11 @@ Here is the final configmap. Please make sure to  substitute the userid with you
 	"gateway.host.vertx.adj": "vertx-adjective-service.devenv-{youruserid}.svc",
 	"gateway.host.vertx.adj.port": 8080
 ....
-[code,json]
+
 
 If you notice the hostname for all the three services are pointing to the kubernetes services. 
 
 
-
-[code,json]
 
 === Deploy to openshift
 
