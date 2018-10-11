@@ -33,5 +33,25 @@ pipelines-{userid} +
 ====  devenv-{userid} PROJECT - Test namespace
 
 
+====  Kickoff build on OpenShift
+
+
+1. Go back to pipelines-{userid} PROJECT 
+2. builds ->pipelines->select 'insult-service-gateway'
+3. click on edit, there please give your forked github URL
+4. Start the pipeline
+
+While the build is going, please continue the lab.
+
+
+
+
+
+
+
+
+
+
+
 
 
