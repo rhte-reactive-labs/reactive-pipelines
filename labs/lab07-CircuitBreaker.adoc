@@ -505,8 +505,12 @@ We are wrapping our WebClient with a CircuitBreaker proxy API and registered a c
 
 Please make sure to import proper classes, especially following import
 
+[source,java]
+----
 import io.vertx.reactivex.core.CompositeFuture;
+----
 
+And remove the original CompositeFuture import.
 
 === Build and deploy to openshift
 
@@ -663,4 +667,4 @@ status: "OK"
 
 TODO : Play around with circuit breaker, shuting down the pods and bring them up and check the state of the circuit breaker as above. 
 
-
+Continue to Lab 8 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab08-HealthChecks.adoc
