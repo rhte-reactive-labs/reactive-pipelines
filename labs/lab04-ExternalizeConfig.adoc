@@ -110,20 +110,20 @@ public class MainVerticle extends AbstractVerticle {
 
     startFuture.complete();
   }
-	private Maybe<JsonObject> initConfigRetriever() {     <1>
+	private Maybe<JsonObject> initConfigRetriever() {  //          <1>
 
 		// Load the default configuration from the classpath
-		ConfigStoreOptions localConfig = new ConfigStoreOptions()     <2>
+		ConfigStoreOptions localConfig = new ConfigStoreOptions()  //          <2>
 			.setType("file")
 			.setFormat("json")
 			.setConfig(new JsonObject().put("path", "insult-config.json"));
 
 		// Add the default and container config options into the ConfigRetriever
-		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()     <3>
+		ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()  //          <3>
 			.addStore(localConfig);
 
 		// Create the ConfigRetriever and return the Maybe when complete
-		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe(); <4>
+		return ConfigRetriever.create(vertx, retrieverOptions).rxGetConfig().toMaybe();  //          <4>
 	}
 }
 ....
@@ -159,12 +159,12 @@ public class MainVerticle extends AbstractVerticle {
   @Override
   public void start(Future<Void> startFuture) {
 
-    initConfigRetriever()     <1>
-      .doOnError(startFuture::fail)     <2>
-      .subscribe(ar -> {     <3>
+    initConfigRetriever()  //          <1>
+      .doOnError(startFuture::fail)  //          <2>
+      .subscribe(ar -> {  //          <3>
         vertx.deployVerticle(InsultGatewayVerticle.class.getName(), new DeploymentOptions().setConfig(ar));
         
-        startFuture.complete();     <4>
+        startFuture.complete();  //          <4>
       });
       }
       private Maybe<JsonObject> initConfigRetriever() {     
@@ -404,11 +404,11 @@ In the above class we are defining all the properties that we need.
 
 <dependency>              
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-config</artifactId>      <1>
+      <artifactId>vertx-config</artifactId>  //          <1>
 </dependency>
 <dependency> 
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-web-client</artifactId>             <2>
+      <artifactId>vertx-web-client</artifactId>  //          <2>
  </dependency>
 
 ....
@@ -493,3 +493,4 @@ mvn clean package
 ....
 
 
+Continue to Lab 5 -> https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/lab05-ConfigMap.adoc
