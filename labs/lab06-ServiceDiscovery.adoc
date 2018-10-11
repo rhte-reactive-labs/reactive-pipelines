@@ -48,6 +48,17 @@ We are going to change service address for all the 3 services in the configmap .
 oc edit configmap insult-config -o yaml
 ....
 
+We are changing the service address of the 3 services to the services running the cluster.
+
+gateway.host.springboot.noun
+gateway.host.springboot.noun.port
+gateway.host.wildfly-swarm.adj
+gateway.host.wildfly-swarm.adj.port
+gateway.host.vertx.adj
+gateway.host.vertx.adj.port
+
+
+
 Here is the final configmap. Please make sure to  substitute the userid with your lab provided userid and guid.
 
 [code,json]
@@ -61,11 +72,11 @@ Here is the final configmap. Please make sure to  substitute the userid with you
 	"query.all-insults": "SELECT * FROM INSULTS",
 	"gateway.circuit-timeout": 1000,
 	"gateway.reset-timeout": 1000,
-	"gateway.host.springboot.noun": "springboot-noun-service-devenv-{youruserid}.apps.{GUID}.rhte.opentlc.com",
+	"gateway.host.springboot.noun": "springboot-noun-service.devenv-{youruserid}.svc",
 	"gateway.host.springboot.noun.port": 8080,
-	"gateway.host.wildfly-swarm.adj": "wildflyswarm-adj-devenv-{youruserid}.apps.{GUID}.rhte.opentlc.com",
+	"gateway.host.wildfly-swarm.adj": "wildflyswarm-adj.devenv-{youruserid}.svc",
 	"gateway.host.wildfly-swarm.adj.port": 8080,
-	"gateway.host.vertx.adj": "vertx-adjective-service-devenv-{youruserid}.apps.{GUID}.rhte.opentlc.com",
+	"gateway.host.vertx.adj": "vertx-adjective-service.devenv-{youruserid}.svc",
 	"gateway.host.vertx.adj.port": 8080
 ....
 [code,json]
