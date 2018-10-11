@@ -44,11 +44,19 @@ router.get("/api/health/readiness").handler(rc -> rc.response().end("OK"));
     router.get("/api/health/liveness").handler(healthCheckHandler);
     
     
-==== Build and deploy 
-[code,script]
-....
-mvn clean fabric8:deploy -Popenshift
-....
+== Deploy to openshift 
+
+1. Checkin your code to github
+
+    git add.
+    git commit -m "lab5" 
+    git push 
+
+2. Go to OCP console -> pipelines-{userid} project - > builds ->pipelines
+
+3. click on vertx-insult-gateway-pipeline
+4. Hit ' Start Pipe line'
+
        
     
     
