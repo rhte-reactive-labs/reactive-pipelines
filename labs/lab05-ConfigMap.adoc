@@ -139,12 +139,43 @@ ConfigStoreOptions localConfig = new ConfigStoreOptions()
 ....
 We are changing the Path to read the properties file from conf/insult-config.json.
 
-== Build and Deploy the InsultServiceGateway to OpenShift
+
+=== Create src/test/resources/insult-config.json
+
+[code,java]
+----
+{
+"env": "local",
+"insults.address": "insults-address",
+"db.url": "jdbc:hsqldb:mem:testdb;shutdown=true",
+"db.driver": "org.hsqldb.jdbcDriver",
+"db.user": "sa",
+"db.password": "sa",
+"query.all-insults": "SELECT * FROM INSULTS",
+"gateway.circuit-timeout": 1000,
+"gateway.reset-timeout": 1000,
+"gateway.host.springboot.noun": "springboot-noun-service-devenv-user2.apps.9249.rhte.opentlc.com",
+"gateway.host.springboot.noun.port": 80,
+"gateway.host.wildfly-swarm.adj": "wildflyswarm-adj-devenv-user2.apps.9249.rhte.opentlc.com",
+"gateway.host.wildfly-swarm.adj.port": 80,
+"gateway.host.vertx.adj": "vertx-adjective-service-devenv-user2.apps.9249.rhte.opentlc.com",
+"gateway.host.vertx.adj.port": 80
+}
+
+
+----
+
+
+
+
+
+
+== Build and Deploy the InsultServiceGateway 
 
 [code,script]
 ....
 
-mvn clean fabric8:deploy -Popenshift
+mvn clean package
 
 [INFO] Updating a Service from openshift.yml
 [INFO] Updated Service: target/fabric8/applyJson/vertx-adjective/service-vertx-insult-gateway.json
