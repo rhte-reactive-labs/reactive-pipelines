@@ -1,4 +1,4 @@
-= Lab 05 : Service Discovery
+= Lab 06 : Service Discovery
 :source-highlighter: coderay
 
 
@@ -76,7 +76,7 @@ If you notice the hostname for all the three services are pointing to the kubern
 ==== Build and deploy to OCP
 [code,json]
 ....
-mvn clean fabric8:deploy Dmaven.test.skip=true  -Popenshift
+mvn clean package Dmaven.test.skip=true
 
 INFO] OpenShift platform detected
 [INFO] Using project: devenv-user1
