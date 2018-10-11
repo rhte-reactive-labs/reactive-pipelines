@@ -41,7 +41,7 @@ pipelines-{userid} +
 2. click on each route url to see everything is working 
 
 
-====  devenv-{userid} PROJECT - Test namespace
+====  stageenv-{userid} PROJECT - Test namespace
 
 
 ====  Kickoff build on OpenShift
@@ -51,7 +51,7 @@ pipelines-{userid} +
 2. builds ->pipelines->select 'insult-service-gateway'
 
 
-
+While the build is progressing, please continue to lab1
 
 
 
