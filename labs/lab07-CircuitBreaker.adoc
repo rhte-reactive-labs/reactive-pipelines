@@ -636,13 +636,7 @@ click on vertx-insult-gateway-pipeline
 
 Hit ' Start Pipe line'
 
-
-
-
-----
-
 Check the following URL and you should below response 
-
 
 http://vertx-insult-gateway-devenv-{USERID}.apps.{GUID}.rhte.opentlc.com/api/cb-state
 
