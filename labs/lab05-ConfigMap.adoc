@@ -29,7 +29,7 @@ https://github.com/rhte-reactive-labs/reactive-pipelines/blob/master/labs/OCP-En
 
 [code,script]
 ....
-oc project vertx-insult-gateway
+oc project devenv-{USERID}
 
 oc create configmap insult-config --from-file=src/main/resources/insult-config.json
 configmap "insult-config" created
