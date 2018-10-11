@@ -583,7 +583,9 @@ Lets implement some more functionality to know the status of circuit breaker
 ----
 router.get("/api/cb-state").handler(this::checkHealth);
 ----
-Here we are defining a new endpoint to get the status of the circuit breaker . Now, add a new method as below . Please make sure to import the class. 
+
+Here we are defining a new endpoint to get the status of the circuit breaker . Now, add a new method as below . Please make sure to import the class.
+
 [code, java]
 ----
  import io.vertx.circuitbreaker.CircuitBreakerState;
