@@ -115,16 +115,11 @@ ConfigStoreOptions defaultConfig = new ConfigStoreOptions()
 			      .setOptional(true)
 		      .setConfig(new JsonObject().put("path", "conf/insult-config.json"));
 ....
-          
- Notice the type is set to configmap. 
- 
- 
- 
- More reading on using Kubernetes configmap
- 
- https://vertx.io/docs/vertx-config/java/#_kubernetes_configmap_store
- 
- https://github.com/InfoSec812/vertx-configmap-example
+
+Notice the type is set to configmap. 
+More reading on using Kubernetes configmap:
+https://vertx.io/docs/vertx-config/java/#_kubernetes_configmap_store
+https://github.com/InfoSec812/vertx-configmap-example
 
 
 
