@@ -1,8 +1,8 @@
 
 = Lab 07 : CircuitBreaker
+:source-highlighter: coderay
 
 In this lab we are going to learn about CircuitBreaker and how to apply to our use case.
-:source-highlighter: coderay
 
 
 A circuit breaker is an object monitoring an interaction, for instance the calls between our proxy and the flaky service. It starts in the closed state. In this state, the circuit breaker forward the calls to the service and monitor the outcome (successes or failures). When the circuit breaker reaches an amount of failure, it switches to the open state. In this state, the service is not called anymore, but a fallback response is used. After some specific time, the circuit breaker goes to the half-open state and let the next request pass and hit the service. Depending on the result of this request, the circuit breaker goes back to the open state (on failure) or the closed state (on success).
